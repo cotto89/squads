@@ -105,9 +105,11 @@ const prodConf = {
 
 
 // npm start || run ** の引数に応じてconfigを返す
-module.exports = (() => {
+function config() {
   const TARGET = process.env.npm_lifecycle_event;
   let conf;
+
+  console.log(`target: ${TARGET}`);
 
   switch (TARGET) {
     case 'build':
@@ -127,4 +129,6 @@ module.exports = (() => {
       return false;
   }
   return conf;
-})();
+}
+
+module.exports = config();
