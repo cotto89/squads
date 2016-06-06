@@ -8,7 +8,7 @@
 
 ## CSS
 
-* wbepack
+* webpack
 * SCSS
 * PostCSS(autoprefixer)
 * CSS Modules(css-loader)
@@ -16,7 +16,7 @@
 # その他
 
 * ESLint
-  * Airbnb ruleに自分のruleを重ねてつけている
+  * Airbnb ruleをbaseにしている
 * JavaScriptの整形にbeautify
 * webpack dev server
   * HtmlWebpackPluginを使ってtemplate.htmlからindex.htmlを生成
