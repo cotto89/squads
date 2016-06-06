@@ -43,4 +43,5 @@
 babel-plugin-jsdoc-to-assertのassertがkarmaとPhantomJSだと通ってしまうので注意。karmaをchromeで走らせた場合、consoleに警告がでる。mocha単体の場合はtestがキチンと落ちる。
 
 [power-assert + babel as a development tool | Web Scratch](http://efcl.info/2016/04/14/espower-babel-is-deprecated/)
+
 [JavaScriptのテスト環境構築(Mocha + power-assert + Karma + babel + webpack) - Qiita](http://qiita.com/cotto89/items/dfa11aa07919bdf73a15)
