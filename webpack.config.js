@@ -72,6 +72,10 @@ const devConf = {
   },
 };
 
+const testConf = {
+  devtool: 'inline-source-map',
+};
+
 const prodConf = {
   module: {
     loader: {
@@ -108,6 +112,9 @@ module.exports = (() => {
   switch (TARGET) {
     case 'build':
       conf = merge(common, buildConf);
+      break;
+    case 'test':
+      conf = merge(common, testConf);
       break;
     case 'start':
     case !TARGET:
