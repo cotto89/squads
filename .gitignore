@@ -42,7 +42,6 @@ jspm_packages
 .settings/
 .vscode/
 jsconfig.json
-.jsbeautifyrc
 
 ### typings ###
 typings
