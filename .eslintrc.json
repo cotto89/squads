@@ -1,0 +1,31 @@
+{
+  "extends": "airbnb",
+  "plugins": [
+    "react"
+  ],
+  "rules": {
+    "no-console": 1,
+    "no-unused-vars": 1,
+    "no-unused-expressions": [
+      2,
+      {
+        "allowShortCircuit": true,
+        "allowTernary": true
+      }
+    ],
+    "one-var-declaration-per-line": 0,
+    "one-var": [
+      "error",
+      {
+        "const": "never"
+      }
+    ],
+    "no-param-reassign": [
+      "error",
+      {
+        "props": false
+      }
+    ],
+    "react/jsx-curly-spacing": 0
+  }
+}
