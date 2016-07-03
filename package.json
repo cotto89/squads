@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "playground_react",
   "scripts": {
-    "start": "npm run build && webpack-dev-server",
-    "build": "webpack",
-    "prod": "NODE_ENV=production webpack -p --progress",
-    "watch": "webpack --watch",
+    "start": "npm run build && webpack-dev-server --config ./webpack/dev.conf.js",
+    "build": "webpack --config ./webpack/dev.conf.js",
+    "prod": "NODE_ENV=production webpack -p --progress --config ./webpack/prod.conf.js",
+    "watch": "webpack --watch --config ./webpack/dev.conf.js",
     "server": "lite-server --verbose",
     "test": "karma start",
     "clean": "rimraf ./dist"
