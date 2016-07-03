@@ -7,7 +7,7 @@
     "mocha": true
   },
   "rules": {
-    "no-console": 1,
+    "no-console": [1, { "allow": ["warn", "error"] }],
     "no-unused-vars": 1,
     "no-unused-expressions": [
       2,
@@ -16,6 +16,7 @@
         "allowTernary": true
       }
     ],
+    "no-underscore-dangle": 0,
     "one-var-declaration-per-line": 0,
     "one-var": [
       "error",
