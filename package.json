@@ -46,12 +46,12 @@
     "postcss-loader": "^0.9.1",
     "power-assert": "^1.4.1",
     "raw-loader": "^0.5.1",
-    "rimraf": "^2.5.2",
-    "sass-loader": "^3.1.2",
+    "rimraf": "^2.5.3",
+    "sass-loader": "^4.0.0",
     "style-loader": "^0.13.0",
     "webpack": "^1.12.9",
     "webpack-dev-server": "^1.14.1",
-    "webpack-merge": "^0.13.0",
+    "webpack-merge": "^0.14.0",
     "webpack-notifier": "^1.2.1"
   },
   "dependencies": {
