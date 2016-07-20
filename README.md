@@ -4,7 +4,6 @@
 
 * babel
 * webpack
-* react
 
 ## CSS
 
