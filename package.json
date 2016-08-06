@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "template_front",
   "scripts": {
-    "start": "npm run build && webpack-dev-server --config ./webpack/dev.conf.js",
+    "start": "webpack-dev-server --config ./webpack/dev.conf.js",
     "build": "webpack --config ./webpack/dev.conf.js",
     "prod": "NODE_ENV=production webpack -p --progress --config ./webpack/prod.conf.js",
     "watch": "webpack --watch --config ./webpack/dev.conf.js",
-    "server": "lite-server --verbose",
+    "server": "lite-server",
     "test": "karma start",
-    "clean": "rimraf ./dist"
+    "clean": "rimraf ./public"
   },
   "devDependencies": {
     "autoprefixer": "^6.3.6",

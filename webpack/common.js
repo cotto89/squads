@@ -1,23 +1,15 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
-const path = require('path');
 const WebpackNotifierPlugin = require('webpack-notifier');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const autoprefixer = require('autoprefixer');
 
-const PATHS = {
-  src: path.join(__dirname, '../', 'src'),
-  dist: path.join(__dirname, '../', 'dist'),
-  publicPath: '/dist/',
-};
-
 module.exports = {
   entry: {
-    index: `${PATHS.src}/index.js`,
+    index: './src/index.js',
   },
   output: {
-    path: PATHS.dist,
-    publicPath: PATHS.publicPath,
+    path: './public',
     filename: '[name].bundle.js',
   },
   module: {
