@@ -2,7 +2,8 @@
 // Generated on Mon Jun 06 2016 14:24:22 GMT+0900 (JST)
 // [Karma - Spectacular Test Runner for Javascript](https://karma-runner.github.io/0.13/index.html)
 
-const webpackConf = require('./webpack/test.conf.js');
+const webpackConf = require('./webpack/test.conf');
+
 module.exports = function karma(config) {
   config.set({
 

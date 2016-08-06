@@ -1,8 +1,10 @@
+/* eslint-disable import/no-extraneous-dependencies */
+
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const common = require('./common.js');
+const common = require('./common');
 
 const prodConf = {
   module: {
@@ -16,7 +18,7 @@ const prodConf = {
       inject: 'body',
       hash: true,
       template: './template.html',
-      title: 'sample',
+      title: 'production',
     }),
     new webpack.DefinePlugin({
       'process.env': {

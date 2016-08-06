@@ -1,11 +1,13 @@
+/* eslint-disable import/no-extraneous-dependencies */
+
 const merge = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const common = require('./common.js');
+const common = require('./common');
 
 const devConf = {
   devtool: 'inline-source-map',
   devServer: {
-    contentBase: 'dist/',
+    contentBase: 'public',
     inline: true,
     noInfo: true,
   },
@@ -15,6 +17,7 @@ const devConf = {
       hash: true,
       template: './template.html',
       env: 'dev',
+      title: 'dev',
     }),
   ],
 };

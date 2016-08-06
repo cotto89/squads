@@ -1,4 +1,6 @@
-const common = require('./common.js');
+/* eslint-disable import/no-extraneous-dependencies */
+
+const common = require('./common');
 const merge = require('webpack-merge');
 
 const testConf = {
