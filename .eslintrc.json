@@ -4,10 +4,20 @@
     "react"
   ],
   "env": {
-    "mocha": true
+    "mocha": true,
+    "browser": true,
+    "node": true
   },
   "rules": {
-    "no-console": [1, { "allow": ["warn", "error"] }],
+    "no-console": [
+      1,
+      {
+        "allow": [
+          "warn",
+          "error"
+        ]
+      }
+    ],
     "no-unused-vars": 1,
     "no-unused-expressions": [
       2,
