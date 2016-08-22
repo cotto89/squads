@@ -44,3 +44,24 @@ babel-plugin-jsdoc-to-assertのassertがkarmaとPhantomJSだと通ってしま�
 [power-assert + babel as a development tool | Web Scratch](http://efcl.info/2016/04/14/espower-babel-is-deprecated/)
 
 [JavaScriptのテスト環境構築(Mocha + power-assert + Karma + babel + webpack) - Qiita](http://qiita.com/cotto89/items/dfa11aa07919bdf73a15)
+
+# React.jsを導入する
+
+```
+npm i -D babel-preset-react
+```
+
+```
+npm i -S react react-dom
+```
+
+.babelrc
+
+```
+{
+  "presets": [
+    "es2015",
+    "react" // reactを追加
+  ],
+...
+```
