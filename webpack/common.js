@@ -26,14 +26,6 @@ module.exports = {
         test: /\.s?css$/,
         loader: ExtractTextPlugin.extract('style', 'css!postcss!sass'),
       },
-      {
-        test: /\.md$/,
-        loader: 'raw',
-      },
-      {
-        test: /\.json$/,
-        loader: 'json',
-      },
     ],
   },
   postcss: [autoprefixer({ browsers: ['last 2 versions'] })],
