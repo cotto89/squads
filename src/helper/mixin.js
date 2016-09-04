@@ -9,7 +9,6 @@ import toPairs from 'lodash.topairs';
  * @param {Object} src
  * @param {Object} context
  * @param {String[]} ignore
- * @example mixin.call(this, src, this, ['ignore', 'props']);
  */
 export default function mixin(master, src = {}, context = {}, ignore = []) {
     for (const [k, v] of toPairs(src)) {
