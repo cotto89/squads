@@ -1,2 +1,3 @@
 --compilers js:babel-register
 --growl
+--reporter min

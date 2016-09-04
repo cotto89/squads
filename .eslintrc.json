@@ -1,45 +1,50 @@
 {
-  "extends": "airbnb",
-  "plugins": [
-    "react"
-  ],
-  "env": {
-    "mocha": true,
-    "browser": true,
-    "node": true
-  },
-  "rules": {
-    "no-console": [
-      1,
-      {
-        "allow": [
-          "warn",
-          "error"
-        ]
-      }
+    "extends": "airbnb",
+    "plugins": [
+        "react"
     ],
-    "no-unused-vars": 1,
-    "no-unused-expressions": [
-      2,
-      {
-        "allowShortCircuit": true,
-        "allowTernary": true
-      }
-    ],
-    "no-underscore-dangle": 0,
-    "one-var-declaration-per-line": 0,
-    "one-var": [
-      "error",
-      {
-        "const": "never"
-      }
-    ],
-    "no-param-reassign": [
-      "error",
-      {
-        "props": false
-      }
-    ],
-    "react/jsx-curly-spacing": 0
-  }
+    "env": {
+        "mocha": true,
+        "browser": true,
+        "node": true
+    },
+    "rules": {
+        "indent": [
+            "error",
+            4
+        ],
+        "no-continue": 0,
+        "no-console": [
+            1,
+            {
+                "allow": [
+                    "warn",
+                    "error"
+                ]
+            }
+        ],
+        "no-unused-vars": 1,
+        "no-unused-expressions": [
+            2,
+            {
+                "allowShortCircuit": true,
+                "allowTernary": true
+            }
+        ],
+        "no-underscore-dangle": 0,
+        "one-var-declaration-per-line": 0,
+        "one-var": [
+            "error",
+            {
+                "const": "never"
+            }
+        ],
+        "no-param-reassign": [
+            "error",
+            {
+                "props": false
+            }
+        ],
+        "react/jsx-curly-spacing": 0
+    }
 }
