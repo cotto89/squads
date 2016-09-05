@@ -14,7 +14,7 @@ describe('StateDispatcher', function() {
         it('should dispatch state', function() {
             this.dispatcher.on('state:change', (nextState) => {
                 assert.deepStrictEqual(nextState, {
-                    counter: { count: 0 },
+                    counter: { count: 0 }
                 });
             });
 

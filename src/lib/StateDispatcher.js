@@ -7,7 +7,7 @@ export default class StateDispatcher extends EventEmitter {
      */
     dispatchState(context, state) {
         this.emit('state:change', {
-            [context]: state,
+            [context]: state
         });
     }
 }

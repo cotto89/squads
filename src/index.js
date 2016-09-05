@@ -4,5 +4,5 @@ import build, { dispatch } from './lib/build.js';
 module.exports = {
     build,
     dispatch,
-    Squad,
+    Squad
 };

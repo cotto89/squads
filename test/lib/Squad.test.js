@@ -14,8 +14,8 @@ describe('Squad', function() {
         const counterMixin = {
             state: { count: 10 },
             actions: {
-                clear() { this.setState({ count: 0 }); },
-            },
+                clear() { this.setState({ count: 0 }); }
+            }
         };
 
         beforeEach(function() {
@@ -25,17 +25,17 @@ describe('Squad', function() {
                 mixins: [counterMixin],
                 actions: {
                     up() { this.setState({ count: this.state.count + 1 }); },
-                    down() { this.setState({ count: this.state.count - 1 }); },
+                    down() { this.setState({ count: this.state.count - 1 }); }
                 },
                 subscribe: {
                     'demo.foo': function() {},
-                    'demo.bar': function() {},
+                    'demo.bar': function() {}
                 },
                 extra: {
                     up10() {
                         this.setState({ count: this.state.count * 10 });
-                    },
-                },
+                    }
+                }
             });
         });
 
@@ -73,7 +73,7 @@ describe('Squad', function() {
         beforeEach(function() {
             this.squad = new Squad({
                 context: 'counter',
-                state: { count: 0 },
+                state: { count: 0 }
             });
         });
 

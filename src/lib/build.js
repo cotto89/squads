@@ -37,6 +37,6 @@ export default function build(options) {
     return {
         getState,
         onChange,
-        dispatch: emitter.dispatch,
+        dispatch: emitter.dispatch
     };
 }

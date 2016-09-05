@@ -26,9 +26,9 @@ const src = {
         nest: {
             clear() {
                 this.setState({ count: 0 });
-            },
-        },
-    },
+            }
+        }
+    }
 };
 
 
