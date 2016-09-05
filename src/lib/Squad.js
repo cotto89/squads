@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+
 import merge from 'lodash.merge';
 import isPlainObject from 'lodash.isplainobject';
 import { validateContext } from './../helper/validates.js';
@@ -66,39 +68,77 @@ export default class Squad {
         this.emitter = emitter;
 
         /* Set handler to ActionEmitter */
-        this.emitter.onDispatch(this.context, (action, ...value) => {
-            const $action = this.actions[action];
-
-            if (!$action) {
-                console.error(`Can not find ${action} in ${this.context}`);
-                return undefined;
-            }
-
-            // Useing promise because action can return Promise
-            return $action && Promise.resolve($action(...value))
-                .then(nextState => {
-                    if (nextState && isPlainObject(nextState)) {
-                        this.setState(nextState);
-                        this.emitter.publish(`${this.context}.${action}`, this.state);
-                        this.dispatcher.dispatchState(this.context, this.state);
-                    }
-                });
-        });
+        this.emitter.onDispatch(this.context, actionHandler.bind(this));
 
         /* Set subscribe as listeners to ActionEmitter */
-        const $subscribe = this.subscribe;
-        for (const targetEvent of Object.keys($subscribe)) {
-            this.emitter.on(targetEvent, (...value) => {
-                const listener = $subscribe[targetEvent];
-
-                listener && Promise.resolve(listener(...value))
-                    .then(nextState => {
-                        if (nextState && isPlainObject(nextState)) {
-                            this.setState(nextState);
-                            this.dispatcher.dispatchState(this.context, this.state);
-                        }
-                    });
-            });
+        for (const targetEvent of Object.keys(this.subscribe)) {
+            this.emitter.on(targetEvent, listenHandler.bind(this));
         }
     }
+}
+
+/**
+ * @param {string} action
+ * @param {any} value
+ */
+function actionHandler(action, ...value) {
+    const $action = this.actions[action];
+    let nextState;
+
+    if (!$action) {
+        console.error(`Can not find ${action} in ${this.context}`);
+        return;
+    }
+
+    try {
+        nextState = $action(...value);
+    } catch (error) {
+        console.error(error);
+    }
+
+    // https://github.com/cotto89/squads/issues/1
+    if (nextState instanceof Promise) {
+        console.error(
+            `"${this.context}.${action}" return Promise. ` +
+            'Action cannot be accepted Promise. ' +
+            'You can use SharedAction for async action.');
+        return;
+    }
+
+    if (!nextState || !isPlainObject(nextState)) return;
+
+    this.setState(nextState);
+    this.emitter.publish(`${this.context}.${action}`, this.state);
+    this.dispatcher.dispatchState(this.context, this.state);
+}
+
+/**
+ * @param {string} event
+ * @param {any} value
+ */
+function listenHandler(event, ...value) {
+    const listener = this.subscribe[event];
+    if (!listener) return;
+
+    let nextState;
+
+    try {
+        nextState = listener(...value);
+    } catch (error) {
+        console.error(error);
+    }
+
+    // https://github.com/cotto89/squads/issues/1
+    if (nextState instanceof Promise) {
+        console.error(
+            `Subscribing "${event}" on ${this.context} return Promise. ` +
+            'Squad cannot be accepted Promise. ' +
+            'You can use SharedAction for async action.');
+        return;
+    }
+
+    if (!nextState || !isPlainObject(nextState)) return;
+
+    this.setState(nextState);
+    this.dispatcher.dispatchState(this.context, this.state);
 }
