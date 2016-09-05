@@ -49,6 +49,11 @@ describe('Integration', function() {
                 },
                 clear() {
                     this.trigger('shared.clear');
+                },
+                force(num) {
+                    Promise.resolve(num)
+                        .then(this.setState({ count: num }))
+                        .then(this.forceUpdate('force'));
                 }
             },
             subscribe: {
@@ -88,6 +93,19 @@ describe('Integration', function() {
         // console.log(emitter);
         //     console.log(dispatcher);
     });
+
+    describe('Squad#forceUpdate', function() {
+        it('shuold change state', function() {
+            this.app.onChange(next => {
+                assert.deepEqual(next, {
+                    counter: { count: 100 }
+                });
+            });
+
+            dispatch({ 'counter.force': 100 });
+        });
+    });
+
 
     describe('SharedAction', function() {
         it('should be {count: 0} on counte state', function() {

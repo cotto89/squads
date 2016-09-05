@@ -68,6 +68,19 @@ export default class Squad {
     }
 
     /**
+     * Dispatch State on manual
+     * Publish event for listener when pass a action
+     * Scenario: When use Promise in SquadAction, use setState and forceUpdate on manual
+     *
+     * @param {string} [action]
+     */
+    forceUpdate(action) {
+        this._dispatcher.dispatchState(this.context, this.state);
+        action && this._emitter.publish(`${this.context}.${action}`, this.state);
+    }
+
+
+    /**
      * Connect to ActionEmitter, StateDispatcher(dispatcher)
      *
      * @param {ActionHandler} handler
