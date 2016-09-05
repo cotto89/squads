@@ -1,9 +1,17 @@
 import assert from 'power-assert';
-import { build, dispatch, Squad } from './../../src/index.js';
+import { build, dispatch, Squad, SharedAction } from './../../src/index.js';
 import { emitter, dispatcher } from './../../src/lib/build.js';
 
 describe('Integration', function() {
     beforeEach(function() {
+        this.shared = new SharedAction({
+            context: 'shared',
+            clear() {
+                return Promise.resolve(0);
+            }
+        });
+
+
         const counterMixin = {
             actions: {
                 up10() {
@@ -38,7 +46,16 @@ describe('Integration', function() {
                 },
                 noDispatchUp() {
                     this.setState({ count: 1000 });
+                },
+                clear() {
+                    this.trigger('shared.clear');
                 }
+            },
+            subscribe: {
+                'shared.clear': function(count) {
+                    return { count };
+                }
+
             }
         });
 
@@ -51,8 +68,10 @@ describe('Integration', function() {
                 }
             }
         });
+
         this.app = build({
-            squads: [this.counter, this.resetter]
+            squads: [this.counter, this.resetter],
+            shareds: [this.shared]
         });
     });
 
@@ -65,9 +84,23 @@ describe('Integration', function() {
         // console.log({ app: this.app });
         // console.log({ counter: this.counter });
         // console.log({ resetter: this.resetter });
+        // console.log({ shared: this.shared })
         // console.log(emitter);
         //     console.log(dispatcher);
     });
+
+    describe('SharedAction', function() {
+        it('should be {count: 0} on counte state', function() {
+            this.app.onChange(next => {
+                assert.deepEqual(next, {
+                    counter: { count: 0 }
+                });
+            });
+
+            dispatch('counter.clear');
+        });
+    });
+
 
     describe('build().getState()', function() {
         it('should return squads state in the form of { context: {state}... }', function() {
@@ -90,7 +123,7 @@ describe('Integration', function() {
     /* Register handler and listener by __connect__ on build() */
     it('shuold register dispatch handler and listener on ActionEmitter', function() {
         assert.equal(Object.keys(emitter.handlers).length, 2);
-        assert.equal(Object.keys(emitter.listeners).length, 1);
+        assert.equal(Object.keys(emitter.listeners).length, 2);
     });
 
     it('shuold change counter state by build().dispatch()', function() {
@@ -113,7 +146,7 @@ describe('Integration', function() {
         dispatch('counter.down');
     });
 
-    it('shuld change counter state by mixin action', function() {
+    it('should change counter state by mixin action', function() {
         this.app.onChange(nextState => {
             assert.deepEqual(nextState, { counter: { count: 10 } });
         });
@@ -131,7 +164,7 @@ describe('Integration', function() {
         this.app.dispatch([{ 'counter.upX': 100 }]);
     });
 
-    it('shuld not change when action return Promise', function() {
+    it('shuld not change state when action return Promise', function() {
         let called = false;
         this.app.onChange(() => {
             called = true;
@@ -140,7 +173,7 @@ describe('Integration', function() {
         assert.equal(called, false);
     });
 
-    it('shuld not change when use this.setState', function() {
+    it('shuld not change state when use this.setState', function() {
         let called = false;
         this.app.onChange(() => {
             called = true;

@@ -6,7 +6,6 @@ import { validateContext } from './../helper/validates.js';
 import mixin from './../helper/mixin.js';
 
 // TODO: lifecycle
-// TODO: trigger SharedAction
 // TODO: 警告処理
 
 const defaults = {
@@ -56,6 +55,16 @@ export default class Squad {
     setState(nextState) {
         defaults.setState.call(this, nextState);
         return this.state;
+    }
+
+    /**
+     * Trigger SharedAction
+     *
+     * @param {string} event - 'context.action'
+     * @param {any} value
+     */
+    trigger(event, ...value) {
+        this._emitter.trigger(event, ...value);
     }
 
     /**
