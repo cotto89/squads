@@ -3,7 +3,7 @@ import StateDispatcher from './StateDispatcher.js';
 
 export const emitter = new ActionEmitter();
 export const dispatcher = new StateDispatcher();
-export const dispatch = emitter.dispatch;
+export const dispatch = emitter.dispatch.bind(emitter);
 
 /**
  * Build Squads
@@ -37,6 +37,6 @@ export default function build(options) {
     return {
         getState,
         onChange,
-        dispatch: emitter.dispatch
+        dispatch
     };
 }
