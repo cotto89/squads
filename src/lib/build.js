@@ -13,7 +13,7 @@ export const dispatch = emitter.dispatch.bind(emitter);
  * @param {SharedAction[]} [options.squads]
  */
 export default function build(options) {
-    const { squads, shareds } = options;
+    const { squads, sharedActions } = options;
 
     /* Connect squads to ActionEmitter */
     const $squads = squads || [];
@@ -22,8 +22,8 @@ export default function build(options) {
     }
 
     /* Connect SharedActions to ActionEmitter */
-    const $shareds = shareds || [];
-    for (const shared of $shareds) {
+    const $sharedActions = sharedActions || [];
+    for (const shared of $sharedActions) {
         shared._connect(emitter);
     }
 

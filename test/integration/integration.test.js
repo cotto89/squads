@@ -4,6 +4,7 @@ import { emitter, dispatcher } from './../../src/lib/build.js';
 
 describe('Integration', function() {
     beforeEach(function() {
+        /* SharedAction */
         this.shared = new SharedAction({
             context: 'shared',
             clear() {
@@ -11,7 +12,7 @@ describe('Integration', function() {
             }
         });
 
-
+        /* Mixin */
         const counterMixin = {
             actions: {
                 up10() {
@@ -29,6 +30,7 @@ describe('Integration', function() {
             }
         };
 
+        /* Squad */
         this.counter = new Squad({
             context: 'counter',
             state: { count: 0 },
@@ -76,7 +78,7 @@ describe('Integration', function() {
 
         this.app = build({
             squads: [this.counter, this.resetter],
-            shareds: [this.shared]
+            sharedActions: [this.shared]
         });
     });
 
@@ -85,7 +87,7 @@ describe('Integration', function() {
         emitter._clear();
     });
 
-    it('should do what...', function() {
+    it('debug', function() {
         // console.log({ app: this.app });
         // console.log({ counter: this.counter });
         // console.log({ resetter: this.resetter });
@@ -130,100 +132,90 @@ describe('Integration', function() {
         });
     });
 
-
-    it('shuold have despatcher and emitter on squad', function() {
-        assert(this.counter._dispatcher);
-        assert(this.counter._emitter);
-        assert(this.resetter._dispatcher);
-        assert(this.resetter._emitter);
-    });
-
-    /* Register handler and listener by __connect__ on build() */
-    it('shuold register dispatch handler and listener on ActionEmitter', function() {
-        assert.equal(Object.keys(emitter.handlers).length, 2);
-        assert.equal(Object.keys(emitter.listeners).length, 2);
-    });
-
-    it('shuold change counter state by build().dispatch()', function() {
-        this.app.onChange((nextState) => {
-            assert.deepEqual(nextState, {
-                counter: { count: 1 }
+    describe('dispatch()', function() {
+        it('shuold change counter state by build().dispatch()', function() {
+            this.app.onChange((nextState) => {
+                assert.deepEqual(nextState, {
+                    counter: { count: 1 }
+                });
             });
+
+            this.app.dispatch('counter.up');
         });
 
-        this.app.dispatch('counter.up');
-    });
-
-    it('shuold change counter state by global dispatch()', function() {
-        this.app.onChange((nextState) => {
-            assert.deepEqual(nextState, {
-                counter: { count: -1 }
+        it('shuold change counter state by global dispatch()', function() {
+            this.app.onChange((nextState) => {
+                assert.deepEqual(nextState, {
+                    counter: { count: -1 }
+                });
             });
+
+            dispatch('counter.down');
         });
 
-        dispatch('counter.down');
-    });
-
-    it('should change counter state by mixin action', function() {
-        this.app.onChange(nextState => {
-            assert.deepEqual(nextState, { counter: { count: 10 } });
-        });
-
-        this.app.dispatch([{ 'counter.up10': null }]);
-    });
-
-    it('shuld change counter state by value ', function() {
-        this.app.onChange(nextState => {
-            assert.deepEqual(nextState, {
-                counter: { count: 100 }
+        it('should change counter state by mixin action', function() {
+            this.app.onChange(nextState => {
+                assert.deepEqual(nextState, { counter: { count: 10 } });
             });
+
+            this.app.dispatch([{ 'counter.up10': null }]);
         });
 
-        this.app.dispatch([{ 'counter.upX': 100 }]);
+        it('shuld change counter state by value ', function() {
+            this.app.onChange(nextState => {
+                assert.deepEqual(nextState, {
+                    counter: { count: 100 }
+                });
+            });
+
+            this.app.dispatch([{ 'counter.upX': 100 }]);
+        });
+
+        it('shuld not change state when action return Promise', function() {
+            let called = false;
+            this.app.onChange(() => {
+                called = true;
+            });
+            dispatch('counter.asyncUp');
+            assert.equal(called, false);
+        });
+
+        it('should only change counte state when use this.setState', function() {
+            let called = false;
+            this.app.onChange(() => {
+                called = true;
+            });
+
+            assert.deepEqual(this.counter.state, { count: 0 });
+
+            dispatch('counter.noDispatchUp');
+            assert.equal(called, false);
+            assert.deepEqual(this.counter.state, { count: 1000 });
+        });
     });
 
-    it('shuld not change state when action return Promise', function() {
-        let called = false;
-        this.app.onChange(() => {
-            called = true;
+    describe('subscribe', function() {
+        it('shuold emit listener when emit resetter.reset', function() {
+            let called = 0;
+            this.app.onChange((nextState) => {
+                called++;
+
+                if (called === 1) {
+                    assert.deepEqual(nextState, { counter: { count: 1 } });
+                }
+
+                if (called === 2) {
+                    assert.deepEqual(nextState, { resetter: { resetCount: 1 } });
+                }
+
+                // listener
+                if (called === 3) {
+                    assert.deepEqual(nextState, { counter: { count: 0 } });
+                }
+            });
+
+            dispatch('counter.up');
+            dispatch('resetter.reset'); // emit 'resetter.rest' and listener
         });
-        dispatch('counter.asyncUp');
-        assert.equal(called, false);
-    });
-
-    it('shuld not change state when use this.setState', function() {
-        let called = false;
-        this.app.onChange(() => {
-            called = true;
-        });
-
-        assert.deepEqual(this.counter.state, { count: 0 });
-
-        dispatch('counter.noDispatchUp');
-        assert.equal(called, false);
-        assert.deepEqual(this.counter.state, { count: 1000 });
-    });
-
-    it('shuold emit listener when emit resetter.reset', function() {
-        let called = 0;
-        this.app.onChange((nextState) => {
-            called++;
-
-            if (called === 1) {
-                assert.deepEqual(nextState, { counter: { count: 1 } });
-            }
-
-            if (called === 2) {
-                assert.deepEqual(nextState, { resetter: { resetCount: 1 } });
-            }
-
-            // listener
-            if (called === 3) {
-                assert.deepEqual(nextState, { counter: { count: 0 } });
-            }
-        });
-
-        dispatch('counter.up');
-        dispatch('resetter.reset'); // emit 'resetter.rest' and listener
     });
 });

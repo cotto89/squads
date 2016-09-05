@@ -88,6 +88,12 @@ export default class ActionEmitter {
         }
     }
 
+    /**
+     * Register SharedAction
+     *
+     * @param {string} context
+     * @param {Function} handler
+     */
     register(context, handler) {
         // TOOD: assert関数で抽象化
         if (this.shareds[context]) {
@@ -97,6 +103,12 @@ export default class ActionEmitter {
         this.shareds[context] = handler;
     }
 
+    /**
+     * Trigger SharedAction
+     *
+     * @param {string} event
+     * @param {any} value
+     */
     trigger(event, ...value) {
         const { context, action } = splitEventName(event);
         const handler = this.shareds[context];
