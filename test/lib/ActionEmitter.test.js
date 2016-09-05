@@ -56,16 +56,19 @@ describe('ActionEmitter', function() {
         it('should emit listener func', function() {
             let calledCount = 0;
 
-            this.emitter.on('ctx.listener', (value) => {
+            this.emitter.on('ctx.listen', (event, value) => {
                 calledCount++;
-                assert.equal(value, 'val');
-            });
-            this.emitter.on('ctx.listener', (value) => {
-                calledCount++;
+                assert.equal(event, 'ctx.listen');
                 assert.equal(value, 'val');
             });
 
-            this.emitter.publish('ctx.listener', 'val');
+            this.emitter.on('ctx.listen', (event, value) => {
+                calledCount++;
+                assert.equal(event, 'ctx.listen');
+                assert.equal(value, 'val');
+            });
+
+            this.emitter.publish('ctx.listen', 'val');
             assert.equal(calledCount, 2);
         });
     });

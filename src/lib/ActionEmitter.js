@@ -89,8 +89,9 @@ export default class ActionEmitter {
      */
     publish(event, ...value) {
         const $listeners = this.listeners[event];
+        if (!$listeners) return;
         for (const listener of $listeners) {
-            listener && listener(...value);
+            listener && listener(event, ...value);
         }
     }
 
