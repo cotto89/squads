@@ -2,9 +2,7 @@
 
 # TODO
 
-- [ ] SharedAction
 - [ ] squad lifecycle
-- [ ] integration test
   - [ ] before
   - [ ] after
   - [ ] beforeAll
