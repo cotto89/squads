@@ -10,4 +10,9 @@ export default class StateDispatcher extends EventEmitter {
             [context]: state
         });
     }
+
+    // for test
+    __clear__() {
+        this._events = {};
+    }
 }
