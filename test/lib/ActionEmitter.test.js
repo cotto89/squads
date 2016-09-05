@@ -72,4 +72,31 @@ describe('ActionEmitter', function() {
             assert.equal(calledCount, 2);
         });
     });
+
+    describe('#register', function() {
+        it('should add ShardActionHandler to this.shared prop', function() {
+            this.emitter.register('shared', cb);
+            assert.deepEqual(this.emitter.shareds, { shared: cb });
+        });
+
+        it('should throw Error when already registered', function() {
+            assert.throws(() => {
+                this.emitter.register('shared', cb);
+                this.emitter.register('shared', cb);
+            }, /shared handler is already exists/);
+        });
+    });
+
+    describe('#trigger', function() {
+        it('shuold emit SharedAction', function() {
+            this.emitter.register('shared', (action, ...value) => {
+                assert.equal(action, 'action');
+                assert.equal(value, 1);
+            });
+
+            this.emitter.trigger('shared.action', 1);
+        });
+    });
+
+
 });

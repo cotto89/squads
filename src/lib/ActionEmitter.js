@@ -9,12 +9,6 @@ import splitEventName from './../helper/splitEventName.js';
  */
 
 /*
-TODO: SharedAction
-* trigger
-* register
-*/
-
-/*
 TODO: 1 dispatch 1render (process)
 TODO: 同processで同じSharedActionを1度だけしか呼びさせないようにする
  */
@@ -22,6 +16,7 @@ TODO: 同processで同じSharedActionを1度だけしか呼びさせないよう
 export default class ActionEmitter {
     constructor() {
         this.handlers = {};
+        this.shareds = {};
         this.listeners = {};
     }
 
@@ -39,6 +34,19 @@ export default class ActionEmitter {
         this.listeners[event].push(listener);
     }
 
+    /**
+     * Publish action result to listeners
+     *
+     * @param {string} event
+     * @param {any} value
+     */
+    publish(event, ...value) {
+        const $listeners = this.listeners[event];
+        if (!$listeners) return;
+        for (const listener of $listeners) {
+            listener && listener(event, ...value);
+        }
+    }
 
     /**
      * Register ActionHandler from Squad
@@ -52,7 +60,6 @@ export default class ActionEmitter {
         }
         this.handlers[context] = handler;
     }
-
 
     /**
      * Dipatch payload from view and emit handler
@@ -81,23 +88,32 @@ export default class ActionEmitter {
         }
     }
 
-    /**
-     * Publish action result to listeners
-     *
-     * @param {string} event
-     * @param {any} value
-     */
-    publish(event, ...value) {
-        const $listeners = this.listeners[event];
-        if (!$listeners) return;
-        for (const listener of $listeners) {
-            listener && listener(event, ...value);
+    register(context, handler) {
+        // TOOD: assert関数で抽象化
+        if (this.shareds[context]) {
+            throw new Error(`${context} handler is already exists`);
         }
+
+        this.shareds[context] = handler;
     }
+
+    trigger(event, ...value) {
+        const { context, action } = splitEventName(event);
+        const handler = this.shareds[context];
+
+        // TOOD: assert関数で抽象化
+        if (!handler) {
+            console.error(`Cannot find handler at ${event} in ActionEmitter`);
+        }
+
+        return handler && handler(action, ...value);
+    }
+
 
     // for test
     _clear() {
         this.handlers = {};
         this.listeners = {};
+        this.shareds = {};
     }
 }
