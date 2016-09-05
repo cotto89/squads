@@ -96,7 +96,7 @@ export default class ActionEmitter {
     }
 
     // for test
-    __clear__() {
+    _clear() {
         this.handlers = {};
         this.listeners = {};
     }

@@ -16,7 +16,7 @@ export default function build(options) {
 
     /* Connect squads to ActionEmitter */
     for (const squad of squads) {
-        squad.__connect__(emitter, dispatcher);
+        squad._connect(emitter, dispatcher);
     }
 
     function getState() {

@@ -57,8 +57,8 @@ describe('Integration', function() {
     });
 
     afterEach(function() {
-        dispatcher.__clear__();
-        emitter.__clear__();
+        dispatcher._clear();
+        emitter._clear();
     });
 
     it('should do what...', function() {
@@ -81,10 +81,10 @@ describe('Integration', function() {
 
 
     it('shuold have despatcher and emitter on squad', function() {
-        assert(this.counter.dispatcher);
-        assert(this.counter.emitter);
-        assert(this.resetter.dispatcher);
-        assert(this.resetter.emitter);
+        assert(this.counter._dispatcher);
+        assert(this.counter._emitter);
+        assert(this.resetter._dispatcher);
+        assert(this.resetter._emitter);
     });
 
     /* Register handler and listener by __connect__ on build() */

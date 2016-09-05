@@ -64,16 +64,16 @@ export default class Squad {
      * @param {ActionHandler} handler
      * @param {EventEmitter} dispatcher
      */
-    __connect__(emitter, dispatcher) {
-        this.dispatcher = dispatcher;
-        this.emitter = emitter;
+    _connect(emitter, dispatcher) {
+        this._dispatcher = dispatcher;
+        this._emitter = emitter;
 
         /* Set handler to ActionEmitter */
-        this.emitter.onDispatch(this.context, actionHandler.bind(this));
+        this._emitter.onDispatch(this.context, actionHandler.bind(this));
 
         /* Set subscribe as listeners to ActionEmitter */
         for (const targetEvent of Object.keys(this.subscribe)) {
-            this.emitter.on(targetEvent, listenHandler.bind(this));
+            this._emitter.on(targetEvent, listenHandler.bind(this));
         }
     }
 }
@@ -109,8 +109,8 @@ function actionHandler(action, ...value) {
     if (!nextState || !isPlainObject(nextState)) return;
 
     this.setState(nextState);
-    this.dispatcher.dispatchState(this.context, this.state);
-    this.emitter.publish(`${this.context}.${action}`, this.state);
+    this._dispatcher.dispatchState(this.context, this.state);
+    this._emitter.publish(`${this.context}.${action}`, this.state);
 }
 
 /**
@@ -141,5 +141,5 @@ function listenHandler(event, ...value) {
     if (!nextState || !isPlainObject(nextState)) return;
 
     this.setState(nextState);
-    this.dispatcher.dispatchState(this.context, this.state);
+    this._dispatcher.dispatchState(this.context, this.state);
 }
