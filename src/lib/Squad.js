@@ -7,6 +7,7 @@ import mixin from './../helper/mixin.js';
 
 // TODO: lifecycle
 // TODO: trigger SharedAction
+// TODO: 警告処理
 
 const defaults = {
     state: {},
@@ -100,7 +101,7 @@ function actionHandler(action, ...value) {
     if (nextState instanceof Promise) {
         console.error(
             `"${this.context}.${action}" return Promise. ` +
-            'Action cannot be accepted Promise. ' +
+            'SquadAction cannot be accepted Promise. ' +
             'You can use SharedAction for async action.');
         return;
     }
@@ -108,8 +109,8 @@ function actionHandler(action, ...value) {
     if (!nextState || !isPlainObject(nextState)) return;
 
     this.setState(nextState);
-    this.emitter.publish(`${this.context}.${action}`, this.state);
     this.dispatcher.dispatchState(this.context, this.state);
+    this.emitter.publish(`${this.context}.${action}`, this.state);
 }
 
 /**
