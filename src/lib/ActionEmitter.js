@@ -9,11 +9,6 @@ import { validateHandlerExistence, hasRegisteredHandler } from './../helper/vali
  * payload: pear of event and value by Object
  */
 
-/*
-TODO: 1 dispatch 1render (process)
-TODO: 同processで同じSharedActionを1度だけしか呼びさせないようにする
- */
-
 export default class ActionEmitter {
     constructor() {
         this.handlers = {};
@@ -39,7 +34,7 @@ export default class ActionEmitter {
      * Publish action result to listeners
      *
      * @param {string} event
-     * @param {any} value
+     * @param {any} [value]
      */
     publish(event, ...value) {
         const $listeners = this.listeners[event];
@@ -61,26 +56,27 @@ export default class ActionEmitter {
     }
 
     /**
-     * Dipatch payload from view and emit handler
+     * Dipatch payload from view and emit ActionHandler
      *
      * @param {string|Object|Object[]} payloads
+     * @param {any} [value]
      *
      * @example
-     * dispatch('context.action')
+     * dispatch('context.action', value)
      * dispatch({ 'context.action': value, 'context.action': value })
      * dispatch([{ context.action: value }, { 'context.action': value }])
      */
-    dispatch(payloads) {
-        const $payloads = formatPayloads(payloads);
+    dispatch(payloads, value) {
+        const $payloads = formatPayloads(payloads, value);
 
         for (const payload of $payloads) {
             const event = Object.keys(payload)[0];
             const { context, action } = splitEventName(event);
-            const value = payload[event];
+            const val = payload[event];
             const handler = this.handlers[context];
 
             validateHandlerExistence(event, handler);
-            handler && handler(action, value);
+            handler && handler(action, val);
         }
     }
 

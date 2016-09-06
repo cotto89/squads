@@ -4,18 +4,18 @@ import toPairs from 'lodash.topairs';
 
 /**
  * @param {string|Object|Object[]} payloads
- * @returns {string} context
+ * @param {any} [value]
  */
-export default function formatPayloads(payloads) {
+export default function formatPayloads(payloads, value) {
     if (isPlainObject(payloads)) {
-        return toPairs(payloads).map(([event, value]) => ({
-            [event]: value
+        return toPairs(payloads).map(([event, v]) => ({
+            [event]: v
         }));
     }
 
     if (isString(payloads)) {
         return [{
-            [payloads]: undefined
+            [payloads]: value
         }];
     }
 
