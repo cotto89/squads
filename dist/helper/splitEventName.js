@@ -7,7 +7,7 @@ exports.default = splitEventName;
 /**
  * Split event name into context name and action name
  *
- * @param {string} event
+ * @param {string} event - 'context.action'
  */
 function splitEventName(event) {
     var array = event.split('.');

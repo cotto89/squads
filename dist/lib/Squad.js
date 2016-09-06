@@ -36,13 +36,13 @@ var _lodash3 = require('lodash.isplainobject');
 
 var _lodash4 = _interopRequireDefault(_lodash3);
 
-var _validates = require('./../helper/validates.js');
-
 var _mixin = require('./../helper/mixin.js');
 
 var _mixin2 = _interopRequireDefault(_mixin);
 
 var _errors = require('./../helper/errors.js');
+
+var _validates = require('./../helper/validates.js');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -75,7 +75,7 @@ var Squad = function () {
          * @param {Object} options.state
          * @param {Object} [options.actions]
          * @param {Object} [options.subscribe]
-         * @param {Object[]} [options.mixin]
+         * @param {Object[]} [options.mixins]
          */
 
     }]);
@@ -114,7 +114,7 @@ var Squad = function () {
          * Trigger SharedAction
          *
          * @param {string} event - 'context.action'
-         * @param {any} value
+         * @param {any} [value]
          */
 
     }, {
@@ -130,11 +130,18 @@ var Squad = function () {
         }
 
         /**
-         * Dispatch State on manual
-         * Publish event for listener when pass a action
-         * Scenario: When use Promise in SquadAction, use setState and forceUpdate on manual
+         * Dispatch State on manual and publish event for listener when pass a action.
+         * Scenario: When use Promise or async function in action on Squad,
+         * use setState and forceUpdate on manual.
          *
          * @param {string} [action]
+         *
+         * @example
+         * action(val) {
+         *     Promise.resolve(val)
+         *         .then((val) => this.setState({ state: val }))
+         *         .then(() => this.forceUpdate('action'))
+         * }
          */
 
     }, {
@@ -145,7 +152,8 @@ var Squad = function () {
         }
 
         /**
-         * Prevent transaction
+         * Prevent actionHander or listenHandler transaction.
+         * When this api is called, no change state, no publish event.
          */
 
     }, {
@@ -155,9 +163,9 @@ var Squad = function () {
         }
 
         /**
-         * Connect to ActionEmitter, StateDispatcher(dispatcher)
+         * Connect to ActionEmitter(emitter) and StateDispatcher(dispatcher)
          *
-         * @param {ActionHandler} handler
+         * @param {ActionHandler} emitter
          * @param {EventEmitter} dispatcher
          */
 
@@ -202,7 +210,7 @@ var Squad = function () {
 
 /**
  * @param {string} action
- * @param {any} value
+ * @param {any} [value]
  */
 
 
@@ -252,7 +260,7 @@ function actionHandler(action) {
 
 /**
  * @param {string} event
- * @param {any} value
+ * @param {any} [value]
  */
 function listenHandler(event) {
     var listener = this.subscribe[event];

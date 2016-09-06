@@ -30,21 +30,21 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 /**
  * @param {string|Object|Object[]} payloads
- * @returns {string} context
+ * @param {any} [value]
  */
-function formatPayloads(payloads) {
+function formatPayloads(payloads, value) {
     if ((0, _lodash2.default)(payloads)) {
         return (0, _lodash6.default)(payloads).map(function (_ref) {
             var _ref2 = (0, _slicedToArray3.default)(_ref, 2);
 
             var event = _ref2[0];
-            var value = _ref2[1];
-            return (0, _defineProperty3.default)({}, event, value);
+            var v = _ref2[1];
+            return (0, _defineProperty3.default)({}, event, v);
         });
     }
 
     if ((0, _lodash4.default)(payloads)) {
-        return [(0, _defineProperty3.default)({}, payloads, undefined)];
+        return [(0, _defineProperty3.default)({}, payloads, value)];
     }
 
     return payloads; // => [{context.action: value}, ...]

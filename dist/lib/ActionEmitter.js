@@ -37,11 +37,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * payload: pear of event and value by Object
  */
 
-/*
-TODO: 1 dispatch 1render (process)
-TODO: 同processで同じSharedActionを1度だけしか呼びさせないようにする
- */
-
 var ActionEmitter = function () {
     function ActionEmitter() {
         (0, _classCallCheck3.default)(this, ActionEmitter);
@@ -73,7 +68,7 @@ var ActionEmitter = function () {
          * Publish action result to listeners
          *
          * @param {string} event
-         * @param {any} value
+         * @param {any} [value]
          */
 
     }, {
@@ -127,20 +122,21 @@ var ActionEmitter = function () {
         }
 
         /**
-         * Dipatch payload from view and emit handler
+         * Dipatch payload from view and emit ActionHandler
          *
          * @param {string|Object|Object[]} payloads
+         * @param {any} [value]
          *
          * @example
-         * dispatch('context.action')
+         * dispatch('context.action', value)
          * dispatch({ 'context.action': value, 'context.action': value })
          * dispatch([{ context.action: value }, { 'context.action': value }])
          */
 
     }, {
         key: 'dispatch',
-        value: function dispatch(payloads) {
-            var $payloads = (0, _formatPayloads2.default)(payloads);
+        value: function dispatch(payloads, value) {
+            var $payloads = (0, _formatPayloads2.default)(payloads, value);
 
             var _iteratorNormalCompletion2 = true;
             var _didIteratorError2 = false;
@@ -157,11 +153,11 @@ var ActionEmitter = function () {
                     var context = _splitEventName.context;
                     var action = _splitEventName.action;
 
-                    var _value = payload[event];
+                    var val = payload[event];
                     var handler = this.handlers[context];
 
                     (0, _validates.validateHandlerExistence)(event, handler);
-                    handler && handler(action, _value);
+                    handler && handler(action, val);
                 }
             } catch (err) {
                 _didIteratorError2 = true;

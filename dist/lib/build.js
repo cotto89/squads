@@ -30,7 +30,7 @@ var dispatch = exports.dispatch = emitter.dispatch.bind(emitter);
  *
  * @param {Object} options
  * @param {Squad[]} [options.squads]
- * @param {SharedAction[]} [options.squads]
+ * @param {SharedAction[]} [options.sharedActions]
  */
 function build(options) {
     var squads = options.squads;
@@ -77,6 +77,12 @@ function build(options) {
 
             shared._connect(emitter);
         }
+
+        /**
+         * Return Squads state
+         *
+         * @returns {Object} state - { context: { state }, ... }
+         */
     } catch (err) {
         _didIteratorError2 = true;
         _iteratorError2 = err;

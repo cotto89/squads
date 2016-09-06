@@ -36,7 +36,7 @@ var SharedAction = function () {
     /**
      * @param {Object} options
      * @param {string} options.context
-     * @param {Array} [mixins]
+     * @param {Object[]} [options.mixins]
      */
     function SharedAction(options) {
         (0, _classCallCheck3.default)(this, SharedAction);
@@ -50,6 +50,11 @@ var SharedAction = function () {
         (0, _mixin2.default)(this, src, this, ['context', 'mixins']);
     }
 
+    /**
+     * @param {ActionEmitter} emitter
+     */
+
+
     (0, _createClass3.default)(SharedAction, [{
         key: '_connect',
         value: function _connect(emitter) {
@@ -62,7 +67,7 @@ var SharedAction = function () {
 
 /**
  * @param {string} action
- * @param {any} value
+ * @param {any} [value]
  */
 /* eslint-disable no-use-before-define */
 
