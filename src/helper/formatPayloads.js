@@ -15,7 +15,7 @@ export default function formatPayloads(payloads) {
 
     if (isString(payloads)) {
         return [{
-            [payloads]: null
+            [payloads]: undefined
         }];
     }
 
