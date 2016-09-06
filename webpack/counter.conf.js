@@ -8,6 +8,11 @@ const config = {
     output: {
         path: './docs/example/counter/',
         filename: 'bundle.js'
+    },
+    devServer: {
+        contentBase: './docs/example/counter/',
+        inline: true,
+        noInfo: true
     }
 };
 

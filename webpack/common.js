@@ -24,11 +24,6 @@ let config = {
         ]
     },
     postcss: [autoprefixer({ browsers: ['last 2 versions'] })],
-    devServer: {
-        contentBase: './docs/example/counter/',
-        inline: true,
-        noInfo: true
-    },
     plugins: [
         new WebpackNotifierPlugin({ title: 'Webpack' }),
         new ExtractTextPlugin('bundle.css'),
