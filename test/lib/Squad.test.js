@@ -69,7 +69,7 @@ describe('Squad', function() {
     });
 
 
-    describe('setState', function() {
+    describe('#setState', function() {
         beforeEach(function() {
             this.squad = new Squad({
                 context: 'counter',
@@ -81,6 +81,15 @@ describe('Squad', function() {
             const nextState = this.squad.setState({ count: 10 });
             assert.deepEqual(this.squad.state, { count: 10 });
             assert.deepEqual(nextState, { count: 10 });
+        });
+    });
+
+    describe('#prevent', function() {
+        it('should throw Prevent as Error', function() {
+            const squad = new Squad({ context: 'demo', state: {} });
+            assert.throws(function() {
+                squad.prevent();
+            });
         });
     });
 });

@@ -4,9 +4,7 @@ import merge from 'lodash.merge';
 import isPlainObject from 'lodash.isplainobject';
 import { validateContext } from './../helper/validates.js';
 import mixin from './../helper/mixin.js';
-
-// TODO: lifecycle
-// TODO: 警告処理
+import Prevent from './../helper/PreventError.js';
 
 const defaults = {
     state: {},
@@ -43,6 +41,8 @@ export default class Squad {
         this.context = validateContext(context) && context;
         this.actions = {};
         this.subscribe = {};
+        this.before = {};
+        this.after = {};
 
         const $mixins = Array.isArray(mixins) ? mixins : [];
         const src = merge(...$mixins, options);
@@ -77,6 +77,13 @@ export default class Squad {
     forceUpdate(action) {
         this._dispatcher.dispatchState(this.context, this.state);
         action && this._emitter.publish(`${this.context}.${action}`, this.state);
+    }
+
+    /**
+     * Prevent transaction
+     */
+    prevent() {
+        throw new Prevent();
     }
 
 
@@ -114,26 +121,34 @@ function actionHandler(action, ...value) {
     }
 
     try {
+        /*
+         * Exec lifecycle and action.
+         * When stop transaction, You can use this.prevent()
+         */
+        this.beforeEach && this.beforeEach(action, ...value);
+        this.before[action] && this.before[action](...value);
         nextState = $action(...value);
-    } catch (error) {
-        console.error(error);
-    }
 
-    // https://github.com/cotto89/squads/issues/1
-    if (nextState instanceof Promise) {
-        console.error(
-            `"${this.context}.${action}" return Promise. ` +
-            'SquadAction cannot be accepted Promise. ' +
-            'You can use SharedAction for async action.');
+        // https://github.com/cotto89/squads/issues/1
+        if (nextState instanceof Promise) {
+            throw new TypeError(`"${this.context}.${action}" returned Promise. ` +
+                'Squad.actions cannot be accepted Promise. ' +
+                'You can use SharedAction for async action.');
+        }
+
+        this.afterEach && this.afterEach(action, nextState);
+        this.after[action] && this.after[action](nextState);
+    } catch (error) {
+        if (!(error.name === 'Prevent')) console.error(error);
         return;
     }
 
     if (!nextState || !isPlainObject(nextState)) return;
-
     this.setState(nextState);
     this._dispatcher.dispatchState(this.context, this.state);
     this._emitter.publish(`${this.context}.${action}`, this.state);
 }
+
 
 /**
  * @param {string} event
@@ -141,27 +156,25 @@ function actionHandler(action, ...value) {
  */
 function listenHandler(event, ...value) {
     const listener = this.subscribe[event];
-    if (!listener) return;
-
     let nextState;
+
+    if (!listener) return;
 
     try {
         nextState = listener(...value);
+        // https://github.com/cotto89/squads/issues/1
+        if (nextState instanceof Promise) {
+            throw new TypeError(
+                `listener on "${event}" at "${this.context}" returned Promise. ` +
+                'Squad.subscribe cannot be accepted Promise. ' +
+                'You can use SharedAction for async action.');
+        }
     } catch (error) {
-        console.error(error);
-    }
-
-    // https://github.com/cotto89/squads/issues/1
-    if (nextState instanceof Promise) {
-        console.error(
-            `Subscribing "${event}" on ${this.context} return Promise. ` +
-            'Squad cannot be accepted Promise. ' +
-            'You can use SharedAction for async action.');
+        if (!(error.name === 'Prevent')) console.error(error);
         return;
     }
 
     if (!nextState || !isPlainObject(nextState)) return;
-
     this.setState(nextState);
     this._dispatcher.dispatchState(this.context, this.state);
 }
