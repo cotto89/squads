@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export*/
 
 import isString from 'lodash.isstring';
-import { RefuseError } from './Errors.js';
+import { RefuseError } from './errors.js';
 
 export function validateContext(ctx) {
     if (!isString(ctx)) {

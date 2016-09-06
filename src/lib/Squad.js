@@ -4,7 +4,7 @@ import merge from 'lodash.merge';
 import isPlainObject from 'lodash.isplainobject';
 import { validateContext, refusePromise, validateActionExistence } from './../helper/validates.js';
 import mixin from './../helper/mixin.js';
-import { Prevent } from './../helper/Errors.js';
+import { Prevent } from './../helper/errors.js';
 
 const defaults = {
     state: {},
