@@ -2,9 +2,9 @@
 
 import merge from 'lodash.merge';
 import isPlainObject from 'lodash.isplainobject';
-import { validateContext } from './../helper/validates.js';
+import { validateContext, refusePromise, validateActionExistence } from './../helper/validates.js';
 import mixin from './../helper/mixin.js';
-import Prevent from './../helper/PreventError.js';
+import { Prevent } from './../helper/Errors.js';
 
 const defaults = {
     state: {},
@@ -115,12 +115,8 @@ function actionHandler(action, ...value) {
     const $action = this.actions[action];
     let nextState;
 
-    if (!$action) {
-        console.error(`Can not find ${action} in ${this.context}`);
-        return;
-    }
-
     try {
+        validateActionExistence(this.context, action, $action);
         /*
          * Exec lifecycle and action.
          * When stop transaction, You can use this.prevent()
@@ -130,16 +126,18 @@ function actionHandler(action, ...value) {
         nextState = $action(...value);
 
         // https://github.com/cotto89/squads/issues/1
-        if (nextState instanceof Promise) {
-            throw new TypeError(`"${this.context}.${action}" returned Promise. ` +
-                'Squad.actions cannot be accepted Promise. ' +
-                'You can use SharedAction for async action.');
-        }
+        refusePromise(`${this.context}.${action}`, nextState);
 
         this.afterEach && this.afterEach(action, nextState);
         this.after[action] && this.after[action](nextState);
     } catch (error) {
-        if (!(error.name === 'Prevent')) console.error(error);
+        if (error.name === 'Prevent') return;
+        if (error.name === 'RefuseError') {
+            console.error(error.message);
+            return;
+        }
+
+        console.error(error);
         return;
     }
 
@@ -162,15 +160,15 @@ function listenHandler(event, ...value) {
 
     try {
         nextState = listener(...value);
-        // https://github.com/cotto89/squads/issues/1
-        if (nextState instanceof Promise) {
-            throw new TypeError(
-                `listener on "${event}" at "${this.context}" returned Promise. ` +
-                'Squad.subscribe cannot be accepted Promise. ' +
-                'You can use SharedAction for async action.');
-        }
+        refusePromise(event, nextState);
     } catch (error) {
-        if (!(error.name === 'Prevent')) console.error(error);
+        if (error.name === 'Prevent') return;
+        if (error.name === 'RefuseError') {
+            console.error(error.message);
+            return;
+        }
+
+        console.error(error);
         return;
     }
 

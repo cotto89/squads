@@ -176,6 +176,7 @@ describe('Integration', function() {
             this.app.onChange(() => {
                 called = true;
             });
+
             dispatch('counter.asyncUp');
             assert.equal(called, false);
         });

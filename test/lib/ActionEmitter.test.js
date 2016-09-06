@@ -24,7 +24,7 @@ describe('ActionEmitter', function() {
             assert.throws(() => {
                 this.emitter.onDispatch('ctx', cb);
                 this.emitter.onDispatch('ctx', cb);
-            }, /ctx handler is already exists/);
+            }, /"ctx" handler is already exists/);
         });
     });
 
@@ -83,7 +83,7 @@ describe('ActionEmitter', function() {
             assert.throws(() => {
                 this.emitter.register('shared', cb);
                 this.emitter.register('shared', cb);
-            }, /shared handler is already exists/);
+            }, /"shared" handler is already exists/);
         });
     });
 
@@ -96,7 +96,11 @@ describe('ActionEmitter', function() {
 
             this.emitter.trigger('shared.action', 1);
         });
+
+        it('throw error when handler is notting', function() {
+            assert.throws(function() {
+                this.emitter.trigger('shared.action', 1);
+            });
+        });
     });
-
-
 });

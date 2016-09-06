@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
 import merge from 'lodash.merge';
 import mixin from './../helper/mixin.js';
-import { validateContext } from './../helper/validates.js';
+import { validateContext, validateActionExistence } from './../helper/validates.js';
 
 export default class SharedAction {
     /**
@@ -31,11 +31,7 @@ export default class SharedAction {
 function handler(action, ...value) {
     const $action = this[action];
 
-    // TODO: squadのActionHandlerとassert関数で抽象化できる
-    if (!$action) {
-        console.error(`Can not find ${action} in ${this.context}`);
-        return;
-    }
+    validateActionExistence(this.context, action, $action);
 
     Promise.resolve($action(...value))
         .then(result => this._emitter.publish(`${this.context}.${action}`, result))

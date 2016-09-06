@@ -2,6 +2,7 @@
 
 import formatPayloads from './../helper/formatPayloads.js';
 import splitEventName from './../helper/splitEventName.js';
+import { validateHandlerExistence, hasRegisteredHandler } from './../helper/validates.js';
 
 /* # MEMO
  * evnet: 'context.action'
@@ -55,9 +56,7 @@ export default class ActionEmitter {
      * @param {Function} handler - ActionHandler
      */
     onDispatch(context, handler) {
-        if (this.handlers[context]) {
-            throw new Error(`${context} handler is already exists`);
-        }
+        hasRegisteredHandler(context, this.handlers[context]);
         this.handlers[context] = handler;
     }
 
@@ -80,10 +79,7 @@ export default class ActionEmitter {
             const value = payload[event];
             const handler = this.handlers[context];
 
-            if (!handler) {
-                console.error(`Cannot find handler at ${event} in ActionEmitter`);
-            }
-
+            validateHandlerExistence(event, handler);
             handler && handler(action, value);
         }
     }
@@ -95,11 +91,7 @@ export default class ActionEmitter {
      * @param {Function} handler
      */
     register(context, handler) {
-        // TOOD: assert関数で抽象化
-        if (this.shareds[context]) {
-            throw new Error(`${context} handler is already exists`);
-        }
-
+        hasRegisteredHandler(context, this.shareds[context]);
         this.shareds[context] = handler;
     }
 
@@ -113,11 +105,7 @@ export default class ActionEmitter {
         const { context, action } = splitEventName(event);
         const handler = this.shareds[context];
 
-        // TOOD: assert関数で抽象化
-        if (!handler) {
-            console.error(`Cannot find handler at ${event} in ActionEmitter`);
-        }
-
+        validateHandlerExistence(event, handler);
         return handler && handler(action, ...value);
     }
 
