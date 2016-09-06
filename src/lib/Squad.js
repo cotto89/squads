@@ -2,9 +2,9 @@
 
 import merge from 'lodash.merge';
 import isPlainObject from 'lodash.isplainobject';
-import { validateContext, refusePromise, validateActionExistence } from './../helper/validates.js';
 import mixin from './../helper/mixin.js';
 import { Prevent } from './../helper/errors.js';
+import { validateContext, refusePromise, validateActionExistence } from './../helper/validates.js';
 
 const defaults = {
     state: {},
@@ -33,7 +33,7 @@ export default class Squad {
      * @param {Object} options.state
      * @param {Object} [options.actions]
      * @param {Object} [options.subscribe]
-     * @param {Object[]} [options.mixin]
+     * @param {Object[]} [options.mixins]
      */
     constructor(options) {
         const { context, state, mixins } = options;
@@ -61,18 +61,25 @@ export default class Squad {
      * Trigger SharedAction
      *
      * @param {string} event - 'context.action'
-     * @param {any} value
+     * @param {any} [value]
      */
     trigger(event, ...value) {
         this._emitter.trigger(event, ...value);
     }
 
     /**
-     * Dispatch State on manual
-     * Publish event for listener when pass a action
-     * Scenario: When use Promise in SquadAction, use setState and forceUpdate on manual
+     * Dispatch State on manual and publish event for listener when pass a action.
+     * Scenario: When use Promise or async function in action on Squad,
+     * use setState and forceUpdate on manual.
      *
      * @param {string} [action]
+     *
+     * @example
+     * action(val) {
+     *     Promise.resolve(val)
+     *         .then((val) => this.setState({ state: val }))
+     *         .then(() => this.forceUpdate('action'))
+     * }
      */
     forceUpdate(action) {
         this._dispatcher.dispatchState(this.context, this.state);
@@ -80,7 +87,8 @@ export default class Squad {
     }
 
     /**
-     * Prevent transaction
+     * Prevent actionHander or listenHandler transaction.
+     * When this api is called, no change state, no publish event.
      */
     prevent() {
         throw new Prevent();
@@ -88,9 +96,9 @@ export default class Squad {
 
 
     /**
-     * Connect to ActionEmitter, StateDispatcher(dispatcher)
+     * Connect to ActionEmitter(emitter) and StateDispatcher(dispatcher)
      *
-     * @param {ActionHandler} handler
+     * @param {ActionHandler} emitter
      * @param {EventEmitter} dispatcher
      */
     _connect(emitter, dispatcher) {
@@ -109,7 +117,7 @@ export default class Squad {
 
 /**
  * @param {string} action
- * @param {any} value
+ * @param {any} [value]
  */
 function actionHandler(action, ...value) {
     const $action = this.actions[action];
@@ -150,7 +158,7 @@ function actionHandler(action, ...value) {
 
 /**
  * @param {string} event
- * @param {any} value
+ * @param {any} [value]
  */
 function listenHandler(event, ...value) {
     const listener = this.subscribe[event];

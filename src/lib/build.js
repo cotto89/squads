@@ -10,7 +10,7 @@ export const dispatch = emitter.dispatch.bind(emitter);
  *
  * @param {Object} options
  * @param {Squad[]} [options.squads]
- * @param {SharedAction[]} [options.squads]
+ * @param {SharedAction[]} [options.sharedActions]
  */
 export default function build(options) {
     const { squads, sharedActions } = options;
@@ -27,6 +27,11 @@ export default function build(options) {
         shared._connect(emitter);
     }
 
+    /**
+     * Return Squads state
+     *
+     * @returns {Object} state - { context: { state }, ... }
+     */
     function getState() {
         const state = {};
         for (const squad of squads) {

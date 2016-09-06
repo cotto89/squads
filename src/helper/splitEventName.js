@@ -1,7 +1,7 @@
 /**
  * Split event name into context name and action name
  *
- * @param {string} event
+ * @param {string} event - 'context.action'
  */
 export default function splitEventName(event) {
     const array = event.split('.');

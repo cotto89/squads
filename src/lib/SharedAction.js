@@ -7,7 +7,7 @@ export default class SharedAction {
     /**
      * @param {Object} options
      * @param {string} options.context
-     * @param {Array} [mixins]
+     * @param {Object[]} [options.mixins]
      */
     constructor(options) {
         const { context, mixins } = options;
@@ -18,6 +18,9 @@ export default class SharedAction {
         mixin(this, src, this, ['context', 'mixins']);
     }
 
+    /**
+     * @param {ActionEmitter} emitter
+     */
     _connect(emitter) {
         this._emitter = emitter;
         this._emitter.register(this.context, handler.bind(this));
@@ -26,7 +29,7 @@ export default class SharedAction {
 
 /**
  * @param {string} action
- * @param {any} value
+ * @param {any} [value]
  */
 function handler(action, ...value) {
     const $action = this[action];
