@@ -10,7 +10,8 @@
         "prebuild:example:counter": "npm run clean:example:counter",
         "build:example:counter": "NODE_ENV=production webpack -p --progress --config ./webpack/counter.conf.js",
         "clean:example:counter": "rimraf ./docs/example/counter/bundle.*",
-        "test": "mocha test/**/**.test.js"
+        "test": "mocha test/**/**.test.js",
+        "server": "lite-server"
     },
     "devDependencies": {
         "autoprefixer": "^6.3.6",
