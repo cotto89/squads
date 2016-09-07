@@ -5,8 +5,9 @@ const WebpackNotifierPlugin = require('webpack-notifier');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const autoprefixer = require('autoprefixer');
 
-const isProd = process.env.NODE_ENV === 'production';
-const isDev = process.env.NODE_ENV === ('development' || undefined);
+const ENV = process.env.NODE_ENV || 'development';
+const isProd = ENV === 'production';
+const isDev = !isProd;
 
 let config = {
     module: {
@@ -29,7 +30,7 @@ let config = {
         new ExtractTextPlugin('bundle.css'),
         new webpack.DefinePlugin({
             'process.env': {
-                NODE_ENV: JSON.stringify(process.env.NODE_ENV)
+                NODE_ENV: JSON.stringify(ENV)
             }
         })
     ]
