@@ -18,13 +18,13 @@ export default function build(options) {
     /* Connect squads to ActionEmitter */
     const $squads = squads || [];
     for (const squad of $squads) {
-        squad._connect(emitter, dispatcher);
+        squad.__connect__(emitter, dispatcher);
     }
 
     /* Connect SharedActions to ActionEmitter */
     const $sharedActions = sharedActions || [];
     for (const shared of $sharedActions) {
-        shared._connect(emitter);
+        shared.___connect__(emitter);
     }
 
     /**

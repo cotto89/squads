@@ -109,7 +109,7 @@ export default class Squad {
      * @param {ActionHandler} emitter
      * @param {EventEmitter} dispatcher
      */
-    _connect(emitter, dispatcher) {
+    __connect__(emitter, dispatcher) {
         this._dispatcher = dispatcher;
         this._emitter = emitter;
 
