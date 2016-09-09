@@ -4,7 +4,7 @@ const merge = require('webpack-merge');
 const common = require('./common');
 
 const config = {
-    entry: './docs/example/counter/index.js',
+    entry: ['./docs/example/counter/index.js', './docs/example/counter/index.scss'],
     output: {
         path: './docs/example/counter/',
         filename: 'bundle.js'

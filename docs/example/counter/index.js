@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { build, Squad, dispatch } from './../../../src/index.js';
 
-require('./index.scss');
-
 const counter = new Squad({
     context: 'counter',
     state: { count: 0 },
