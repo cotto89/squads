@@ -8,27 +8,7 @@ import { validateContext, refusePromise, validateActionExistence } from './../he
 import dispatcher from './StateDispatcher.js';
 import emitter from './ActionEmitter.js';
 
-const defaults = {
-    state: {},
-    setState(nextState) {
-        this.state = Object.assign({}, this.state, nextState);
-    }
-};
-
 export default class Squad {
-    /**
-     * Modifier default behavior of Squad
-     *
-     * @static
-     * @param {Object} options
-     * @returns Squad
-     */
-    static extend(options) {
-        Object.assign(defaults, options);
-        return this;
-    }
-
-
     /**
      * @param {Object} options
      * @param {string} options.context
@@ -43,7 +23,7 @@ export default class Squad {
      */
     constructor(options) {
         const { context, state, mixins, beforeEach, afterEach } = options;
-        this.state = state || defaults.state;
+        this.state = state || {};
         this.context = validateContext(context) && context;
         this.actions = {};
         this.subscribe = {};
@@ -68,7 +48,7 @@ export default class Squad {
      * @param {Object} nextState
      */
     setState(nextState) {
-        defaults.setState.call(this, nextState);
+        this.state = Object.assign({}, this.state, nextState);
         return this.state;
     }
 
