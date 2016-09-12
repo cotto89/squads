@@ -7,7 +7,7 @@ import dispatcher from './StateDispatcher.js';
  * @param {Squad[]} [options.squads]
  * @param {SharedAction[]} [options.sharedActions]
  */
-export default function build(options) {
+export default function store(options) {
     const { squads } = options;
 
     /**
