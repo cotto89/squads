@@ -4,12 +4,13 @@ import formatPayloads from './../helper/formatPayloads.js';
 import splitEventName from './../helper/splitEventName.js';
 import { validateHandlerExistence, hasRegisteredHandler } from './../helper/validates.js';
 
-/* # MEMO
+/* NOTE:
+ * action: action name or function of action
  * evnet: 'context.action'
  * payload: pear of event and value by Object
  */
 
-export default class ActionEmitter {
+export class ActionEmitter {
     constructor() {
         this.handlers = {};
         this.shareds = {};
@@ -113,3 +114,7 @@ export default class ActionEmitter {
         this.shareds = {};
     }
 }
+
+const emitter = new ActionEmitter();
+export const dispatch = emitter.dispatch.bind(emitter);
+export default emitter;

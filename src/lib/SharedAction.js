@@ -2,6 +2,8 @@
 import merge from 'lodash.merge';
 import mixin from './../helper/mixin.js';
 import { validateContext, validateActionExistence } from './../helper/validates.js';
+import emitter from './ActionEmitter.js';
+
 
 export default class SharedAction {
     /**
@@ -16,14 +18,7 @@ export default class SharedAction {
         const $mixins = Array.isArray(mixins) ? mixins : [];
         const src = merge(...$mixins, options);
         mixin(this, src, this, ['context', 'mixins']);
-    }
-
-    /**
-     * @param {ActionEmitter} emitter
-     */
-    _connect(emitter) {
-        this._emitter = emitter;
-        this._emitter.register(this.context, handler.bind(this));
+        emitter.register(this.context, handler.bind(this));
     }
 }
 
@@ -37,6 +32,6 @@ function handler(action, ...value) {
     validateActionExistence(this.context, action, $action);
 
     Promise.resolve($action(...value))
-        .then(result => this._emitter.publish(`${this.context}.${action}`, result))
+        .then(result => emitter.publish(`${this.context}.${action}`, result))
         .catch(err => console.error(err));
 }

@@ -5,6 +5,8 @@ import isPlainObject from 'lodash.isplainobject';
 import mixin from './../helper/mixin.js';
 import { Prevent } from './../helper/errors.js';
 import { validateContext, refusePromise, validateActionExistence } from './../helper/validates.js';
+import dispatcher from './StateDispatcher.js';
+import emitter from './ActionEmitter.js';
 
 const defaults = {
     state: {},
@@ -34,19 +36,32 @@ export default class Squad {
      * @param {Object} [options.actions]
      * @param {Object} [options.subscribe]
      * @param {Object[]} [options.mixins]
+     * @param {Object} [options.before]
+     * @param {Object} [options.after]
+     * @param {Function} [options.beforeEach]
+     * @param {Function} [options.afterEach]
      */
     constructor(options) {
-        const { context, state, mixins } = options;
+        const { context, state, mixins, beforeEach, afterEach } = options;
         this.state = state || defaults.state;
         this.context = validateContext(context) && context;
         this.actions = {};
         this.subscribe = {};
         this.before = {};
         this.after = {};
+        this.beforeEach = beforeEach;
+        this.afterEach = afterEach;
 
         const $mixins = Array.isArray(mixins) ? mixins : [];
         const src = merge(...$mixins, options);
         mixin(this, src, this, ['context', 'state', 'mixins']);
+
+        /* Set handler to ActionEmitter */
+        emitter.onDispatch(this.context, actionHandler.bind(this));
+        /* Set subscribe as listeners to ActionEmitter */
+        for (const targetEvent of Object.keys(this.subscribe)) {
+            emitter.on(targetEvent, listenHandler.bind(this));
+        }
     }
 
     /**
@@ -64,7 +79,7 @@ export default class Squad {
      * @param {any} [value]
      */
     trigger(event, ...value) {
-        this._emitter.trigger(event, ...value);
+        emitter.trigger(event, ...value);
     }
 
     /**
@@ -82,8 +97,8 @@ export default class Squad {
      * }
      */
     forceUpdate(action) {
-        this._dispatcher.dispatchState(this.context, this.state);
-        action && this._emitter.publish(`${this.context}.${action}`, this.state);
+        dispatcher.dispatchState(this.context, this.state);
+        action && emitter.publish(`${this.context}.${action}`, this.state);
     }
 
     /**
@@ -92,26 +107,6 @@ export default class Squad {
      */
     prevent() {
         throw new Prevent();
-    }
-
-
-    /**
-     * Connect to ActionEmitter(emitter) and StateDispatcher(dispatcher)
-     *
-     * @param {ActionHandler} emitter
-     * @param {EventEmitter} dispatcher
-     */
-    __connect__(emitter, dispatcher) {
-        this._dispatcher = dispatcher;
-        this._emitter = emitter;
-
-        /* Set handler to ActionEmitter */
-        this._emitter.onDispatch(this.context, actionHandler.bind(this));
-
-        /* Set subscribe as listeners to ActionEmitter */
-        for (const targetEvent of Object.keys(this.subscribe)) {
-            this._emitter.on(targetEvent, listenHandler.bind(this));
-        }
     }
 }
 
@@ -151,8 +146,8 @@ function actionHandler(action, ...value) {
 
     if (!nextState || !isPlainObject(nextState)) return;
     this.setState(nextState);
-    this._dispatcher.dispatchState(this.context, this.state);
-    this._emitter.publish(`${this.context}.${action}`, this.state);
+    dispatcher.dispatchState(this.context, this.state);
+    emitter.publish(`${this.context}.${action}`, this.state);
 }
 
 
@@ -182,5 +177,5 @@ function listenHandler(event, ...value) {
 
     if (!nextState || !isPlainObject(nextState)) return;
     this.setState(nextState);
-    this._dispatcher.dispatchState(this.context, this.state);
+    dispatcher.dispatchState(this.context, this.state);
 }

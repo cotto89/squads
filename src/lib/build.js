@@ -1,9 +1,4 @@
-import ActionEmitter from './ActionEmitter.js';
-import StateDispatcher from './StateDispatcher.js';
-
-export const emitter = new ActionEmitter();
-export const dispatcher = new StateDispatcher();
-export const dispatch = emitter.dispatch.bind(emitter);
+import dispatcher from './StateDispatcher.js';
 
 /**
  * Build Squads
@@ -13,19 +8,7 @@ export const dispatch = emitter.dispatch.bind(emitter);
  * @param {SharedAction[]} [options.sharedActions]
  */
 export default function build(options) {
-    const { squads, sharedActions } = options;
-
-    /* Connect squads to ActionEmitter */
-    const $squads = squads || [];
-    for (const squad of $squads) {
-        squad.__connect__(emitter, dispatcher);
-    }
-
-    /* Connect SharedActions to ActionEmitter */
-    const $sharedActions = sharedActions || [];
-    for (const shared of $sharedActions) {
-        shared.___connect__(emitter);
-    }
+    const { squads } = options;
 
     /**
      * Return Squads state
@@ -49,7 +32,6 @@ export default function build(options) {
 
     return {
         getState,
-        onChange,
-        dispatch
+        onChange
     };
 }
