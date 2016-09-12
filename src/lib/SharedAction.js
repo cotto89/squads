@@ -1,7 +1,5 @@
 /* eslint-disable no-use-before-define */
 import merge from 'lodash.merge';
-import isFunction from 'lodash.isfunction';
-import toPairs from 'lodash.topairs';
 import mixin from './../helper/mixin.js';
 import { validateContext, validateActionExistence } from './../helper/validates.js';
 
@@ -17,18 +15,13 @@ export default class SharedAction {
 
         const $mixins = Array.isArray(mixins) ? mixins : [];
         const src = merge(...$mixins, options);
-
-        for (const [key, val] of toPairs(src)) {
-            if (isFunction(val)) this[key] = val;
-        }
-
-        mixin(this, src, this, [...Object.keys(this), 'mixins']);
+        mixin(this, src, this, ['context', 'mixins']);
     }
 
     /**
      * @param {ActionEmitter} emitter
      */
-    __connect__(emitter) {
+    _connect(emitter) {
         this._emitter = emitter;
         this._emitter.register(this.context, handler.bind(this));
     }
@@ -43,7 +36,7 @@ function handler(action, ...value) {
 
     validateActionExistence(this.context, action, $action);
 
-    Promise.resolve($action.call(this, ...value))
+    Promise.resolve($action(...value))
         .then(result => this._emitter.publish(`${this.context}.${action}`, result))
         .catch(err => console.error(err));
 }

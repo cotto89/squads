@@ -52,18 +52,18 @@ describe('Squad', function() {
             assert.deepEqual(this.squad.state, { count: 0 });
 
             for (let i = 0; i < 2; i++) {
-                this.squad.actions.up.call(this.squad);
+                this.squad.actions.up();
             }
 
             assert.deepEqual(this.squad.state, { count: 2 });
 
-            this.squad.actions.down.call(this.squad);
+            this.squad.actions.down();
             assert.deepEqual(this.squad.state, { count: 1 });
 
-            this.squad.extra.up10.call(this.squad);
+            this.squad.extra.up10();
             assert.deepEqual(this.squad.state, { count: 10 });
 
-            this.squad.actions.clear.call(this.squad);
+            this.squad.actions.clear();
             assert.deepEqual(this.squad.state, { count: 0 });
         });
     });

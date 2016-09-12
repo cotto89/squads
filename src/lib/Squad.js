@@ -33,28 +33,20 @@ export default class Squad {
      * @param {Object} options.state
      * @param {Object} [options.actions]
      * @param {Object} [options.subscribe]
-     * @param {Object} [options.before]
-     * @param {Object} [options.after]
-     * @param {Function} [options.beforeEach]
-     * @param {Function} [options.afterEach]
      * @param {Object[]} [options.mixins]
      */
     constructor(options) {
         const { context, state, mixins } = options;
         this.state = state || defaults.state;
         this.context = validateContext(context) && context;
+        this.actions = {};
+        this.subscribe = {};
+        this.before = {};
+        this.after = {};
 
         const $mixins = Array.isArray(mixins) ? mixins : [];
         const src = merge(...$mixins, options);
-
-        this.actions = src.actions || {};
-        this.subscribe = src.subscribe || {};
-        this.before = src.before || {};
-        this.after = src.after || {};
-        this.beforeEach = src.beforeEach;
-        this.afterEach = src.afterEach;
-
-        mixin(this, src, this, [...Object.keys(this), 'mixins']);
+        mixin(this, src, this, ['context', 'state', 'mixins']);
     }
 
     /**
@@ -137,15 +129,15 @@ function actionHandler(action, ...value) {
          * Exec lifecycle and action.
          * When stop transaction, You can use this.prevent()
          */
-        this.beforeEach && this.beforeEach.call(this, action, ...value);
-        this.before[action] && this.before[action].call(this, ...value);
-        nextState = $action.call(this, ...value);
+        this.beforeEach && this.beforeEach(action, ...value);
+        this.before[action] && this.before[action](...value);
+        nextState = $action(...value);
 
         // https://github.com/cotto89/squads/issues/1
         refusePromise(`${this.context}.${action}`, nextState);
 
-        this.afterEach && this.afterEach.call(this, action, nextState);
-        this.after[action] && this.after[action].call(this, nextState);
+        this.afterEach && this.afterEach(action, nextState);
+        this.after[action] && this.after[action](nextState);
     } catch (error) {
         if (error.name === 'Prevent') return;
         if (error.name === 'RefuseError') {
@@ -175,7 +167,7 @@ function listenHandler(event, ...value) {
     if (!listener) return;
 
     try {
-        nextState = listener.call(this, ...value);
+        nextState = listener(...value);
         refusePromise(event, nextState);
     } catch (error) {
         if (error.name === 'Prevent') return;
