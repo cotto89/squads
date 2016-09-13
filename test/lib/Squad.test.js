@@ -381,10 +381,10 @@ describe('Squad', function() {
             });
 
             context('when return Promise', function() {
-                it('throw RefuseError', function() {
+                it('throw RefusePromise', function() {
                     emitter.on('$error', (event, err) => {
                         assert.equal(event, '$error');
-                        assert.equal(err.name, 'RefuseError');
+                        assert.equal(err.name, 'RefusePromise');
                     });
 
                     dispatch('$counter.invalidAsyncUp');

@@ -117,7 +117,7 @@ function actionHandler(action, ...value) {
         emitter.publish('$error', error);
 
         if (error.name === 'Prevent') return;
-        if (error.name === 'RefuseError') {
+        if (error.name === 'RefusePromise') {
             if (process.env.NODE_ENV !== 'test') console.error(error.message);
             return;
         }
@@ -150,7 +150,7 @@ function listenHandler(event, ...value) {
         emitter.publish('$error', error);
 
         if (error.name === 'Prevent') return;
-        if (error.name === 'RefuseError') {
+        if (error.name === 'RefusePromise') {
             console.error(error.message);
             return;
         }

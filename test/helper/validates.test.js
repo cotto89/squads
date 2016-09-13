@@ -28,10 +28,10 @@ describe('hasRegisteredHandler()', function() {
 });
 
 describe('refusePromise()', function() {
-    it('shuold throw RefuseError when value is Promise', function() {
+    it('shuold throw RefusePromise when value is Promise', function() {
         assert.throws(function() {
             refusePromise('ctx.act', Promise.resolve(true));
-        }, /RefuseError/);
+        }, /RefusePromise/);
     });
 });
 

@@ -1,7 +1,5 @@
-/* eslint-disable import/prefer-default-export*/
-
 import isString from 'lodash.isstring';
-import { RefuseError } from './errors.js';
+import { RefusePromise } from './errors.js';
 
 export function validateContext(ctx) {
     if (!isString(ctx)) {
@@ -18,7 +16,7 @@ export function hasRegisteredHandler(context, handler) {
 
 export function refusePromise(event, value) {
     if (value instanceof Promise) {
-        throw new RefuseError(
+        throw new RefusePromise(
             `"${event}" returned Promise. But Squad cannot be accepted Promise. ` +
             'You can use SharedAction for async action.'
         );
