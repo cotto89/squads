@@ -1,11 +1,14 @@
-/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable import/no-extraneous-dependencies, no-console */
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { build, Squad, dispatch } from './../../../src/index.js';
+import { store, Squad, dispatch } from './../../../dist/index.js';
 
 const counter = new Squad({
     context: 'counter',
     state: { count: 0 },
+    afterEach(action, state) {
+        console.log(state);
+    },
     actions: {
         up(num = 1) {
             return { count: this.state.count + num };
@@ -16,14 +19,14 @@ const counter = new Squad({
     }
 });
 
-const app = build({
+const $store = store({
     squads: [counter]
 });
 
 class Counter extends Component {
     constructor(props) {
         super(props);
-        this.state = app.getState().counter;
+        this.state = $store.getState().counter;
         this.up = () => dispatch('counter.up');
         this.down = () => dispatch('counter.down');
         this.up10 = () => dispatch({ 'counter.up': 10 });
@@ -31,7 +34,7 @@ class Counter extends Component {
     }
 
     componentDidMount() {
-        app.onChange(nextState => {
+        $store.onChange(nextState => {
             this.setState(nextState.counter);
         });
     }
