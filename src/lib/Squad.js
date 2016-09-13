@@ -38,7 +38,7 @@ export default class Squad {
         this.afterEach = afterEach;
 
         const $mixins = Array.isArray(mixins) ? mixins : [];
-        const src = merge(...$mixins, options);
+        const src = merge({}, ...$mixins, options);
         mixin(this, src, this, ['context', 'state', 'mixins']);
 
         /* Set handler to ActionEmitter */
