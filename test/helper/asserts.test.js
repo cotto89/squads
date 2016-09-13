@@ -1,21 +1,17 @@
 import assert from 'power-assert';
 import {
-    validateContext,
+    hasContext,
     hasRegisteredHandler,
     refusePromise,
-    validateActionExistence,
-    validateHandlerExistence
-} from './../../src/helper/validates.js';
+    hasAction,
+    hasHandler
+} from './../../src/helper/asserts.js';
 
-describe('validateContext()', function() {
+describe('hasContext()', function() {
     it('shuold throw TypeError when context is not string', function() {
         assert.throws(function() {
-            validateContext(undefined);
+            hasContext(undefined);
         }, /'context' is required/);
-    });
-
-    it('shuold return true when context is string', function() {
-        assert.equal(validateContext('context'), true);
     });
 });
 
@@ -28,26 +24,26 @@ describe('hasRegisteredHandler()', function() {
 });
 
 describe('refusePromise()', function() {
-    it('shuold throw RefuseError when value is Promise', function() {
+    it('shuold throw RefusePromise when value is Promise', function() {
         assert.throws(function() {
             refusePromise('ctx.act', Promise.resolve(true));
-        }, /RefuseError/);
+        }, /RefusePromise/);
     });
 });
 
-describe('validateHandlerExistence', function() {
+describe('hasHandler', function() {
     it('throw ReferenceError when handler is notting', function() {
         assert.throws(function() {
-            validateHandlerExistence('ctx.act', undefined);
+            hasHandler('ctx.act', undefined);
         }, /ReferenceError/);
     });
 });
 
 
-describe('validateActionExistence', function() {
+describe('hasAction', function() {
     it('throw ReferenceError when action is notting', function() {
         assert.throws(function() {
-            validateActionExistence('ctx', 'act', undefined);
+            hasAction('ctx', 'act', undefined);
         }, /ReferenceError/);
     });
 });

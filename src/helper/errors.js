@@ -1,7 +1,7 @@
-export class RefuseError extends Error {
+export class RefusePromise extends Error {
     constructor(...args) {
         super(...args);
-        this.name = 'RefuseError';
+        this.name = 'RefusePromise';
     }
 }
 

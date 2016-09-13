@@ -1,6 +1,5 @@
 import assert from 'power-assert';
-import StateDispatcher from './../../src/lib/StateDispatcher.js';
-
+import { StateDispatcher } from './../../src/lib/StateDispatcher.js';
 
 describe('StateDispatcher', function() {
     beforeEach(function() {

@@ -1,13 +1,18 @@
-/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable import/no-extraneous-dependencies, no-console */
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const WebpackNotifierPlugin = require('webpack-notifier');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const autoprefixer = require('autoprefixer');
 
-const ENV = process.env.NODE_ENV || 'development';
-const isProd = ENV === 'production';
+/* NODE_ENV */
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const isProd = NODE_ENV === 'production';
 const isDev = !isProd;
+
+console.info(`
+:--------- process.env.NODE_ENV: ${NODE_ENV} ---------:
+`);
 
 let config = {
     module: {
@@ -30,7 +35,7 @@ let config = {
         new ExtractTextPlugin('bundle.css'),
         new webpack.DefinePlugin({
             'process.env': {
-                NODE_ENV: JSON.stringify(ENV)
+                NODE_ENV: JSON.stringify(NODE_ENV)
             }
         })
     ]
@@ -42,12 +47,13 @@ if (isDev) {
 
 if (isProd) {
     config = merge(config, {
-        module: {
-            loader: {
-                test: /\.s?css$/,
-                loader: ExtractTextPlugin.extract('style', 'css?minimize!postcss!sass')
-            }
-        }
+        plugins: [
+            new webpack.optimize.UglifyJsPlugin({
+                compress: { warnings: false }
+            }),
+            new webpack.optimize.DedupePlugin(),
+            new webpack.optimize.AggressiveMergingPlugin()
+        ]
     });
 }
 

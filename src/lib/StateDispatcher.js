@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 
-export default class StateDispatcher extends EventEmitter {
+export class StateDispatcher extends EventEmitter {
     /**
      * @param {string} context
      * @param {Object} state
@@ -16,3 +16,6 @@ export default class StateDispatcher extends EventEmitter {
         this._events = {};
     }
 }
+
+const dispatcher = new StateDispatcher();
+export default dispatcher;

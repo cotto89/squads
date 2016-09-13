@@ -4,29 +4,11 @@ import merge from 'lodash.merge';
 import isPlainObject from 'lodash.isplainobject';
 import mixin from './../helper/mixin.js';
 import { Prevent } from './../helper/errors.js';
-import { validateContext, refusePromise, validateActionExistence } from './../helper/validates.js';
-
-const defaults = {
-    state: {},
-    setState(nextState) {
-        this.state = Object.assign({}, this.state, nextState);
-    }
-};
+import { hasContext, refusePromise, hasAction } from './../helper/asserts.js';
+import dispatcher from './StateDispatcher.js';
+import emitter from './ActionEmitter.js';
 
 export default class Squad {
-    /**
-     * Modifier default behavior of Squad
-     *
-     * @static
-     * @param {Object} options
-     * @returns Squad
-     */
-    static extend(options) {
-        Object.assign(defaults, options);
-        return this;
-    }
-
-
     /**
      * @param {Object} options
      * @param {string} options.context
@@ -34,26 +16,44 @@ export default class Squad {
      * @param {Object} [options.actions]
      * @param {Object} [options.subscribe]
      * @param {Object[]} [options.mixins]
+     * @param {Object} [options.before]
+     * @param {Object} [options.after]
+     * @param {Function} [options.beforeEach]
+     * @param {Function} [options.afterEach]
      */
     constructor(options) {
-        const { context, state, mixins } = options;
-        this.state = state || defaults.state;
-        this.context = validateContext(context) && context;
+        const { context, state, mixins, beforeEach, afterEach } = options;
+
+        if (process.env.NODE_ENV !== 'production') {
+            hasContext(context);
+        }
+
+        this.state = state || {};
+        this.context = context;
         this.actions = {};
         this.subscribe = {};
         this.before = {};
         this.after = {};
+        this.beforeEach = beforeEach;
+        this.afterEach = afterEach;
 
         const $mixins = Array.isArray(mixins) ? mixins : [];
-        const src = merge(...$mixins, options);
+        const src = merge({}, ...$mixins, options);
         mixin(this, src, this, ['context', 'state', 'mixins']);
+
+        /* Set handler to ActionEmitter */
+        emitter.onDispatch(this.context, actionHandler.bind(this));
+        /* Set subscribe as listeners to ActionEmitter */
+        for (const targetEvent of Object.keys(this.subscribe)) {
+            emitter.on(targetEvent, listenHandler.bind(this));
+        }
     }
 
     /**
      * @param {Object} nextState
      */
     setState(nextState) {
-        defaults.setState.call(this, nextState);
+        this.state = Object.assign({}, this.state, nextState);
         return this.state;
     }
 
@@ -64,7 +64,7 @@ export default class Squad {
      * @param {any} [value]
      */
     trigger(event, ...value) {
-        this._emitter.trigger(event, ...value);
+        emitter.trigger(event, ...value);
     }
 
     /**
@@ -82,8 +82,8 @@ export default class Squad {
      * }
      */
     forceUpdate(action) {
-        this._dispatcher.dispatchState(this.context, this.state);
-        action && this._emitter.publish(`${this.context}.${action}`, this.state);
+        dispatcher.dispatchState(this.context, this.state);
+        action && emitter.publish(`${this.context}.${action}`, this.state);
     }
 
     /**
@@ -93,55 +93,43 @@ export default class Squad {
     prevent() {
         throw new Prevent();
     }
-
-
-    /**
-     * Connect to ActionEmitter(emitter) and StateDispatcher(dispatcher)
-     *
-     * @param {ActionHandler} emitter
-     * @param {EventEmitter} dispatcher
-     */
-    _connect(emitter, dispatcher) {
-        this._dispatcher = dispatcher;
-        this._emitter = emitter;
-
-        /* Set handler to ActionEmitter */
-        this._emitter.onDispatch(this.context, actionHandler.bind(this));
-
-        /* Set subscribe as listeners to ActionEmitter */
-        for (const targetEvent of Object.keys(this.subscribe)) {
-            this._emitter.on(targetEvent, listenHandler.bind(this));
-        }
-    }
 }
 
 /**
- * @param {string} action
+ * @param {string} actionName
  * @param {any} [value]
  */
-function actionHandler(action, ...value) {
-    const $action = this.actions[action];
+function actionHandler(actionName, ...value) {
+    const action = this.actions[actionName];
     let nextState;
 
     try {
-        validateActionExistence(this.context, action, $action);
+        if (process.env.NODE_ENV !== 'production') {
+            hasAction(this.context, actionName, action);
+        }
+
         /*
          * Exec lifecycle and action.
          * When stop transaction, You can use this.prevent()
          */
-        this.beforeEach && this.beforeEach(action, ...value);
-        this.before[action] && this.before[action](...value);
-        nextState = $action(...value);
+        this.beforeEach && this.beforeEach(actionName, ...value);
+        this.before[actionName] && this.before[actionName](...value);
+        nextState = action(...value);
 
         // https://github.com/cotto89/squads/issues/1
-        refusePromise(`${this.context}.${action}`, nextState);
 
-        this.afterEach && this.afterEach(action, nextState);
-        this.after[action] && this.after[action](nextState);
+        if (process.env.NODE_ENV !== 'production') {
+            refusePromise(`${this.context}.${actionName}`, nextState);
+        }
+
+        this.afterEach && this.afterEach(actionName, nextState);
+        this.after[actionName] && this.after[actionName](nextState);
     } catch (error) {
+        emitter.publish('$error', error);
+
         if (error.name === 'Prevent') return;
-        if (error.name === 'RefuseError') {
-            console.error(error.message);
+        if (error.name === 'RefusePromise') {
+            if (process.env.NODE_ENV !== 'test') console.error(error.message);
             return;
         }
 
@@ -151,8 +139,8 @@ function actionHandler(action, ...value) {
 
     if (!nextState || !isPlainObject(nextState)) return;
     this.setState(nextState);
-    this._dispatcher.dispatchState(this.context, this.state);
-    this._emitter.publish(`${this.context}.${action}`, this.state);
+    dispatcher.dispatchState(this.context, this.state);
+    emitter.publish(`${this.context}.${actionName}`, this.state);
 }
 
 
@@ -168,10 +156,15 @@ function listenHandler(event, ...value) {
 
     try {
         nextState = listener(...value);
-        refusePromise(event, nextState);
+
+        if (process.env.NODE_ENV !== 'production') {
+            refusePromise(event, nextState);
+        }
     } catch (error) {
+        emitter.publish('$error', error);
+
         if (error.name === 'Prevent') return;
-        if (error.name === 'RefuseError') {
+        if (error.name === 'RefusePromise') {
             console.error(error.message);
             return;
         }
@@ -182,5 +175,5 @@ function listenHandler(event, ...value) {
 
     if (!nextState || !isPlainObject(nextState)) return;
     this.setState(nextState);
-    this._dispatcher.dispatchState(this.context, this.state);
+    dispatcher.dispatchState(this.context, this.state);
 }

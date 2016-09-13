@@ -2,14 +2,15 @@
 
 import formatPayloads from './../helper/formatPayloads.js';
 import splitEventName from './../helper/splitEventName.js';
-import { validateHandlerExistence, hasRegisteredHandler } from './../helper/validates.js';
+import { hasHandler, hasRegisteredHandler } from './../helper/asserts.js';
 
-/* # MEMO
+/* NOTE:
+ * action: action name or function of action
  * evnet: 'context.action'
  * payload: pear of event and value by Object
  */
 
-export default class ActionEmitter {
+export class ActionEmitter {
     constructor() {
         this.handlers = {};
         this.shareds = {};
@@ -51,7 +52,10 @@ export default class ActionEmitter {
      * @param {Function} handler - ActionHandler
      */
     onDispatch(context, handler) {
-        hasRegisteredHandler(context, this.handlers[context]);
+        if (process.env.NODE_ENV !== 'production') {
+            hasRegisteredHandler(context, this.handlers[context]);
+        }
+
         this.handlers[context] = handler;
     }
 
@@ -75,7 +79,11 @@ export default class ActionEmitter {
             const val = payload[event];
             const handler = this.handlers[context];
 
-            validateHandlerExistence(event, handler);
+
+            if (process.env.NODE_ENV !== 'production') {
+                hasHandler(event, handler);
+            }
+
             handler && handler(action, val);
         }
     }
@@ -87,7 +95,10 @@ export default class ActionEmitter {
      * @param {Function} handler
      */
     register(context, handler) {
-        hasRegisteredHandler(context, this.shareds[context]);
+        if (process.env.NODE_ENV !== 'production') {
+            hasRegisteredHandler(context, this.shareds[context]);
+        }
+
         this.shareds[context] = handler;
     }
 
@@ -101,7 +112,10 @@ export default class ActionEmitter {
         const { context, action } = splitEventName(event);
         const handler = this.shareds[context];
 
-        validateHandlerExistence(event, handler);
+        if (process.env.NODE_ENV !== 'production') {
+            hasHandler(event, handler);
+        }
+
         return handler && handler(action, ...value);
     }
 
@@ -113,3 +127,7 @@ export default class ActionEmitter {
         this.shareds = {};
     }
 }
+
+const emitter = new ActionEmitter();
+export const dispatch = emitter.dispatch.bind(emitter);
+export default emitter;
