@@ -112,7 +112,6 @@ export class ActionEmitter {
         const { context, action } = splitEventName(event);
         const handler = this.shareds[context];
 
-
         if (process.env.NODE_ENV !== 'production') {
             hasHandler(event, handler);
         }

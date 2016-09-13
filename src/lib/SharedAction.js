@@ -28,18 +28,18 @@ export default class SharedAction {
 }
 
 /**
- * @param {string} action
+ * @param {string} actionName
  * @param {any} [value]
  */
-function handler(action, ...value) {
-    const $action = this[action];
+function handler(actionName, ...value) {
+    const action = this[actionName];
 
     if (process.env.NODE_ENV !== 'production') {
-        hasAction(this.context, action, $action);
+        hasAction(this.context, actionName, action);
     }
 
-    Promise.resolve($action(...value))
-        .then(result => emitter.publish(`${this.context}.${action}`, result))
+    Promise.resolve(action(...value))
+        .then(result => emitter.publish(`${this.context}.${actionName}`, result))
         .catch(err => {
             emitter.publish('$error', err);
             console.error(err);

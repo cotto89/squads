@@ -96,34 +96,34 @@ export default class Squad {
 }
 
 /**
- * @param {string} action
+ * @param {string} actionName
  * @param {any} [value]
  */
-function actionHandler(action, ...value) {
-    const $action = this.actions[action];
+function actionHandler(actionName, ...value) {
+    const action = this.actions[actionName];
     let nextState;
 
     try {
         if (process.env.NODE_ENV !== 'production') {
-            hasAction(this.context, action, $action);
+            hasAction(this.context, actionName, action);
         }
 
         /*
          * Exec lifecycle and action.
          * When stop transaction, You can use this.prevent()
          */
-        this.beforeEach && this.beforeEach(action, ...value);
-        this.before[action] && this.before[action](...value);
-        nextState = $action(...value);
+        this.beforeEach && this.beforeEach(actionName, ...value);
+        this.before[actionName] && this.before[actionName](...value);
+        nextState = action(...value);
 
         // https://github.com/cotto89/squads/issues/1
 
         if (process.env.NODE_ENV !== 'production') {
-            refusePromise(`${this.context}.${action}`, nextState);
+            refusePromise(`${this.context}.${actionName}`, nextState);
         }
 
-        this.afterEach && this.afterEach(action, nextState);
-        this.after[action] && this.after[action](nextState);
+        this.afterEach && this.afterEach(actionName, nextState);
+        this.after[actionName] && this.after[actionName](nextState);
     } catch (error) {
         emitter.publish('$error', error);
 
@@ -140,7 +140,7 @@ function actionHandler(action, ...value) {
     if (!nextState || !isPlainObject(nextState)) return;
     this.setState(nextState);
     dispatcher.dispatchState(this.context, this.state);
-    emitter.publish(`${this.context}.${action}`, this.state);
+    emitter.publish(`${this.context}.${actionName}`, this.state);
 }
 
 
