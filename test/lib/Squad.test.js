@@ -131,8 +131,9 @@ describe('Squad', function() {
             });
 
             it('should be dispatched state', function() {
-                this.store.onChange((next) =>
-                    assert.deepStrictEqual(next, { counter: { count: 1 } }));
+                this.store.onChange((next) => {
+                    assert.deepStrictEqual(next, { counter: { count: 1 } });
+                });
                 dispatch('counter.up');
             });
 

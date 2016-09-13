@@ -4,7 +4,7 @@ import merge from 'lodash.merge';
 import isPlainObject from 'lodash.isplainobject';
 import mixin from './../helper/mixin.js';
 import { Prevent } from './../helper/errors.js';
-import { validateContext, refusePromise, validateActionExistence } from './../helper/validates.js';
+import { hasContext, refusePromise, hasAction } from './../helper/asserts.js';
 import dispatcher from './StateDispatcher.js';
 import emitter from './ActionEmitter.js';
 
@@ -23,8 +23,13 @@ export default class Squad {
      */
     constructor(options) {
         const { context, state, mixins, beforeEach, afterEach } = options;
+
+        if (process.env.NODE_ENV !== 'production') {
+            hasContext(context);
+        }
+
         this.state = state || {};
-        this.context = validateContext(context) && context;
+        this.context = context;
         this.actions = {};
         this.subscribe = {};
         this.before = {};
@@ -99,7 +104,10 @@ function actionHandler(action, ...value) {
     let nextState;
 
     try {
-        validateActionExistence(this.context, action, $action);
+        if (process.env.NODE_ENV !== 'production') {
+            hasAction(this.context, action, $action);
+        }
+
         /*
          * Exec lifecycle and action.
          * When stop transaction, You can use this.prevent()
@@ -109,7 +117,10 @@ function actionHandler(action, ...value) {
         nextState = $action(...value);
 
         // https://github.com/cotto89/squads/issues/1
-        refusePromise(`${this.context}.${action}`, nextState);
+
+        if (process.env.NODE_ENV !== 'production') {
+            refusePromise(`${this.context}.${action}`, nextState);
+        }
 
         this.afterEach && this.afterEach(action, nextState);
         this.after[action] && this.after[action](nextState);
@@ -145,7 +156,10 @@ function listenHandler(event, ...value) {
 
     try {
         nextState = listener(...value);
-        refusePromise(event, nextState);
+
+        if (process.env.NODE_ENV !== 'production') {
+            refusePromise(event, nextState);
+        }
     } catch (error) {
         emitter.publish('$error', error);
 

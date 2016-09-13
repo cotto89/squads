@@ -1,11 +1,10 @@
 import isString from 'lodash.isstring';
 import { RefusePromise } from './errors.js';
 
-export function validateContext(ctx) {
+export function hasContext(ctx) {
     if (!isString(ctx)) {
         throw new TypeError("'context' is required");
     }
-    return true;
 }
 
 export function hasRegisteredHandler(context, handler) {
@@ -23,14 +22,14 @@ export function refusePromise(event, value) {
     }
 }
 
-export function validateHandlerExistence(event, handler) {
+export function hasHandler(event, handler) {
     if (!handler) {
         throw new ReferenceError(`Cannot find handler on ${event}`);
     }
 }
 
-export function validateActionExistence(context, action, target) {
+export function hasAction(context, action, target) {
     if (!target) {
-        throw new ReferenceError(`Can not find action: "${action}" in ${context}`);
+        throw new ReferenceError(`Cannot find action: "${action}" in ${context}`);
     }
 }
