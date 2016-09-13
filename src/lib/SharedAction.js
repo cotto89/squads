@@ -33,5 +33,8 @@ function handler(action, ...value) {
 
     Promise.resolve($action(...value))
         .then(result => emitter.publish(`${this.context}.${action}`, result))
-        .catch(err => console.error(err));
+        .catch(err => {
+            emitter.publish('$error', err);
+            console.error(err);
+        });
 }

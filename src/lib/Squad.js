@@ -114,9 +114,11 @@ function actionHandler(action, ...value) {
         this.afterEach && this.afterEach(action, nextState);
         this.after[action] && this.after[action](nextState);
     } catch (error) {
+        emitter.publish('$error', error);
+
         if (error.name === 'Prevent') return;
         if (error.name === 'RefuseError') {
-            console.error(error.message);
+            if (process.env.NODE_ENV !== 'test') console.error(error.message);
             return;
         }
 
@@ -145,6 +147,8 @@ function listenHandler(event, ...value) {
         nextState = listener(...value);
         refusePromise(event, nextState);
     } catch (error) {
+        emitter.publish('$error', error);
+
         if (error.name === 'Prevent') return;
         if (error.name === 'RefuseError') {
             console.error(error.message);

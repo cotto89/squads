@@ -1,5 +1,5 @@
 import assert from 'power-assert';
-import ActionEmitter from './../../src/lib/ActionEmitter.js';
+import { ActionEmitter } from './../../src/lib/ActionEmitter.js';
 
 describe('ActionEmitter', function() {
     const cb = () => {};
