@@ -6,9 +6,9 @@ import toPairs from 'lodash.topairs';
  * Merge object and auto bind this context
  *
  * @param {Object} master
- * @param {Object} src
- * @param {Object} context
- * @param {String[]} ignore
+ * @param {Object} [src]
+ * @param {Object} [context]
+ * @param {String[]} [ignore]
  */
 export default function mixin(master, src = {}, context = {}, ignore = []) {
     for (const [k, v] of toPairs(src)) {
