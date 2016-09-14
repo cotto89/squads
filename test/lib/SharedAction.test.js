@@ -33,6 +33,7 @@ describe('SharedAction', function() {
         it('add handler to ActionEmitter', function() {
             /* eslint-disable no-unused-vars */
             const shared = new SharedAction(this.sharedSrc);
+            shared._connect();
             assert.deepEqual(Object.keys(emitter.shareds), ['shared']);
             assert(isFunction(emitter.shareds.shared));
         });
