@@ -9,12 +9,10 @@
 API
 ====
 
-Squad(options)
----------
+Squad(options: `Object`)
+-------------------------
 
-### options: `Object`
-
-#### context: `string`
+### context: `string`
 
 * **required**
 
@@ -23,20 +21,20 @@ squadに一意な名前を登録します。contextはacitonの名前とセッ�
 viewから`dispatch`関数を使って`dispatch('context.action')`のようにsquadのactionを叩くことができます。またsubscribeオプションでSharedActionや他のSquadのactionの実行を監視する場合に使われます。
 
 
-#### state: `Object`
+### state: `Object`
 
 * default: `{}`
 
 squad内のstateになります。
 
 
-#### actions: `Object`
+### actions: `Object`
 
 * default: `{}`
 
 actionを登録します。actionはviewからdispatchされた値と現在のstateを参照して次のstateを返す関数です。actionが新しいstateを返すとstateが更新され、eventとしてpublishされます。またviewに対して更新されたstateがdispatchされます。
 
-actionが`false`を返す、または`Squad#prevent`を呼ぶとactionの更新を無効にできます。この場合stateは更新されず、viewへstateをdispatchさせません。また、eventがpublishされません。
+actionが`false`を返す、または`Squad#prevent`を呼ぶとactionによるstate更新を無効にできます。この場合stateは更新されず、viewへstateをdispatchさせません。また、eventがpublishされません。
 
 stateは更新するがeventのpublishやstateのdispatchをしたくない場合は、`Squad#setState`を呼び出して手動でstateを更新だけを行うことができます。
 
@@ -111,13 +109,13 @@ const shared = new SharedAction({
 })
 ```
 
-#### subscribe: `Object`
+### subscribe: `Object`
 
 * default: `{}`
 
 `ShareAction`や他のSquadのactionの実行(event)を監視することができます。
 
-subscribe内に登録するcallback関数の挙動はeventをpubslishすること以外はacitonと同様です。次のstateを返せばstateが更新され、stateがviewにdispatchされます。
+subscribe内に登録するcallback関数の挙動はeventをpublishすること以外はacitonと同様です。次のstateを返せばstateが更新され、stateがviewにdispatchされます。
 
 subscribeはSharedActionを使った非同期ActionやSquad間のstateの依存解決に有効です。
 
@@ -167,11 +165,9 @@ const counterB = new Squad({
 });
 ```
 
-#### mixins: `Object[]`
+### mixins: `Object[]`
 
 optionをmergeすることができます。mixin可能なオプションは`actions`と`subscribe`,  `custom option`のみです。Squadとmixinオブジェクト内でオプションキーのコンフリクトがある場合。Squad内のオプションが優先されます。
-
-##### example
 
 ```js
 const mixin = {
@@ -196,17 +192,41 @@ const counter = new Squad({
 counter.actions.reset() // -> { count: 0 }
 ```
 
-#### before: `Object`
+### beforeEach: `Function`
+
+squad内のすべてのactionが実行される直前に呼び出されるcallbackを登録することができます。
+
+`beforeEach` -> `before`の順番で呼びだされます。
+
+#### callback params
+
+* `{string}` `action` - dispatchされたaction name
+* `{*}` `value`- dispatchされた値
+
+```js
+new Squad({
+  context: 'counter',
+  state: { count: 0 },
+  beforeEach(action, value) {
+    ...
+  },
+  actions: {
+    increment(count = 0) {
+      ...
+    }
+  }
+})
+```
+
+### before: `Object`
 
 action毎にactionが実行される直前に呼び出されるcallback関数を登録することができます。
 
 `beforeEach` -> `before`の順番で呼びだされます。
 
-##### callback params
+#### callback params
 
 * `{*}` `value` - dispatchされたときに渡された値
-
-##### example
 
 ```js
 new Squad({
@@ -224,65 +244,34 @@ new Squad({
 })
 ```
 
-
-#### after: `Object`
-
-action毎にactionが実行された後に呼び出されるcallback関数を登録することができます。callbackに渡される`nextState`は対象のactionが返した値です。このとき`nextState`でSquadのstateがまだ更新されていないことに注意してください。すべてのcallback hookが完了次第stateが更新されます。
-
-`afterEach` -> `after`の順番で呼びだされます。
-
-##### callback params
-
-* `{*}` `nextState` - actionが返した値
-
-
-
-#### beforeEach: `Function`
-
-squad内のすべてのactionが実行される直前に呼び出されるcallbackを登録することができます。
-
-`beforeEach` -> `before`の順番で呼びだされます。
-
-##### callback params
-
-* `{string}` `action` - dispatchされたaction name
-* `{*}` `value`- dispatchされた値
-
-##### example
-
-```js
-new Squad({
-  context: 'counter',
-  state: { count: 0 },
-  beforeEach(action, value) {
-    ...
-  },
-  actions: {
-    increment(count = 0) {
-      ...
-    }
-  }
-})
-```
-
-#### afterEach: `Function`
+### afterEach: `Function`
 
 Squad内のすべてのactionが実行された直後に呼び出されるcallbackを登録することができます。callbackに渡される`nextState`は直前のactionが返した値です。このとき`nextState`でsquadのstateがまだ更新されていないことに注意してください。すべてのcallback hookが完了次第、stateが更新されます。
 
 `afterEach` -> `after`の順番で呼びだされます。
 
-##### callback params
+#### callback params
 
 * `{string}` `action` - dispatchされたaction name
 * `{*}` `nextState`: actionが返した値
 
 
+### after: `Object`
 
-#### custom option
+action毎にactionが実行された後に呼び出されるcallback関数を登録することができます。callbackに渡される`nextState`は対象のactionが返した値です。このとき`nextState`でSquadのstateがまだ更新されていないことに注意してください。すべてのcallback hookが完了次第stateが更新されます。
+
+`afterEach` -> `after`の順番で呼びだされます。
+
+#### callback params
+
+* `{*}` `nextState` - actionが返した値
+
+
+
+### custom option
 
 option以外に任意のkeyで関数を登録することができます。オプションに登録する関数と同様にthisが自動でbindされます。
 
-##### example
 
 ```js
 new Squad({
@@ -304,47 +293,46 @@ new Squad({
 ```
 
 
-### instance methods
+## instance methods
 
-#### setState(nextState)
+### setState(nextState)
 
 stateを手動で更新します。`setState`を使って手動でstateを更新した場合は、viewにstateがdispatchされません。またeventをpublishしません。
 
-##### params
+#### params
 
 * `{Object}` `nextState`
 
-#### trigger(event, valeu)
+### trigger(event, valeu)
 
 SharedActionを実行します。
 
-##### params
+#### params
 
 * `{string}` `event` - `'context.action'`
 * `{*}` `value`
 
 
-#### forceUpdate(action)
+### forceUpdate(action)
 
 手動でviewにstateをdispatchします。引数にactionを渡した場合、eventをpublishできます。
 
-##### params
+#### params
 
 * `{string}` `[action]`
 
-#### prevent()
+### prevent()
 
 actionの処理を切り上げます。`prevent`が呼ばれるとstateを更新せず、stateがdispatchされません。またeventがpublishされません。また以降のhookも実行されません。
 
 
-SharedAction
--------------
+SharedAction(options: `Object`)
+------------------------------
 
 SharedActionはactionの返り値にPromiseを受け付けます。非同期処理の結果をeventとしてpublishします。SharedActionは非同期で処理されることに注意してください。
 
-### options: `Object`
 
-#### context: `string`
+### context: `string`
 
 * **required**
 
@@ -352,7 +340,7 @@ SharedActionに一意な名前を登録します。contextはacitonの名前と�
 
 Squadから`trigger`関数を使って`trigger('context.action')`のようにSharedActionのactionを叩くことができます。またSquadがsubscribe可能なeventになります。
 
-#### mixins: `Object[]`
+### mixins: `Object[]`
 
 'context'と'mixin'以外のoptionをmergeすることが可能です。keyのコンフリクトがある場合はSharedAction内のオプションが優先されます。
 
@@ -372,8 +360,7 @@ const shared = new SharedAction({
 this.trigger('shared.actionB');
 ```
 
-#### example
-
+### example
 
 ```js
 import { Squad, SharedAction, store, dispatch } from 'squads';
@@ -409,37 +396,36 @@ $store.onChange(nextState => {...})
 dispatch('counter.reset')
 ```
 
-store(options)
+
+store(options: `Object`)
 -------------
 
 SquadやSharedActionの初期化処理を行い、`store.getState`関数と`store.onChange`関数を返します。
 
-### options: `Object`
-
-#### squads: `Array.<Squad>`
+### squads: `Array.<Squad>`
 
 squadを登録します。
 
-#### sharedActions: `Array.<SharedAction>`
+### sharedActions: `Array.<SharedAction>`
 
 SharedActionを登録します。
 
-### returns
+## returns
 
-#### getState()
+### getState()
 
 登録してあるSquadのstateを返します。storeから返されるstate構造は`{ context: { contextState } }`です。
 
 
-#### onChange(callback)
+### onChange(callback)
 
 すべてのSquadのstateの変更を監視します。変更があった場合callbackが呼ばれます。
 
-##### callback params
+#### callback params
 
 * `{Object}` `nextState`
 
-### example
+## example
 
 ```js
 
