@@ -8,7 +8,19 @@ import dispatcher from './StateDispatcher.js';
  * @param {SharedAction[]} [options.sharedActions]
  */
 export default function store(options) {
-    const { squads } = options;
+    const { squads, sharedActions } = options;
+
+    /* Connect Squads to emitter and dispatcher */
+    const $squads = Array.isArray(squads) ? squads : [];
+    for (const squad of $squads) {
+        squad._connect();
+    }
+
+    /* Connect SharedAction to emitter */
+    const $shareds = Array.isArray(sharedActions) ? sharedActions : [];
+    for (const shared of $shareds) {
+        shared._connect();
+    }
 
     /**
      * Return Squads state

@@ -23,6 +23,14 @@ export default class SharedAction {
         const $mixins = Array.isArray(mixins) ? mixins : [];
         const src = merge({}, ...$mixins, options);
         mixin(this, src, this, ['context', 'mixins']);
+    }
+
+
+    /**
+     * Connect to ActionEmitter
+     */
+    _connect() {
+        /* Set handler to ActionEmitter */
         emitter.register(this.context, handler.bind(this));
     }
 }

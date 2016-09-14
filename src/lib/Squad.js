@@ -40,13 +40,6 @@ export default class Squad {
         const $mixins = Array.isArray(mixins) ? mixins : [];
         const src = merge({}, ...$mixins, options);
         mixin(this, src, this, ['context', 'state', 'mixins']);
-
-        /* Set handler to ActionEmitter */
-        emitter.onDispatch(this.context, actionHandler.bind(this));
-        /* Set subscribe as listeners to ActionEmitter */
-        for (const targetEvent of Object.keys(this.subscribe)) {
-            emitter.on(targetEvent, listenHandler.bind(this));
-        }
     }
 
     /**
@@ -92,6 +85,20 @@ export default class Squad {
      */
     prevent() {
         throw new Prevent();
+    }
+
+
+    /**
+     * Connect to ActionEmitter
+     */
+    _connect() {
+        /* Set handler to ActionEmitter */
+        emitter.onDispatch(this.context, actionHandler.bind(this));
+
+        /* Set subscribe as listeners to ActionEmitter */
+        for (const targetEvent of Object.keys(this.subscribe)) {
+            emitter.on(targetEvent, listenHandler.bind(this));
+        }
     }
 }
 
