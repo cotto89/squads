@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies, no-console */
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { store, Squad, dispatch } from './../../../dist/index.js';

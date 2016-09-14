@@ -4,10 +4,6 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _assign = require('babel-runtime/core-js/object/assign');
-
-var _assign2 = _interopRequireDefault(_assign);
-
 var _keys = require('babel-runtime/core-js/object/keys');
 
 var _keys2 = _interopRequireDefault(_keys);
@@ -15,6 +11,10 @@ var _keys2 = _interopRequireDefault(_keys);
 var _getIterator2 = require('babel-runtime/core-js/get-iterator');
 
 var _getIterator3 = _interopRequireDefault(_getIterator2);
+
+var _assign = require('babel-runtime/core-js/object/assign');
+
+var _assign2 = _interopRequireDefault(_assign);
 
 var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
 
@@ -92,34 +92,6 @@ var Squad = function () {
         var $mixins = Array.isArray(mixins) ? mixins : [];
         var src = _lodash2.default.apply(undefined, [{}].concat((0, _toConsumableArray3.default)($mixins), [options]));
         (0, _mixin2.default)(this, src, this, ['context', 'state', 'mixins']);
-
-        /* Set handler to ActionEmitter */
-        _ActionEmitter2.default.onDispatch(this.context, actionHandler.bind(this));
-        /* Set subscribe as listeners to ActionEmitter */
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
-
-        try {
-            for (var _iterator = (0, _getIterator3.default)((0, _keys2.default)(this.subscribe)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var targetEvent = _step.value;
-
-                _ActionEmitter2.default.on(targetEvent, listenHandler.bind(this));
-            }
-        } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-        } finally {
-            try {
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                    _iterator.return();
-                }
-            } finally {
-                if (_didIteratorError) {
-                    throw _iteratorError;
-                }
-            }
-        }
     }
 
     /**
@@ -182,6 +154,43 @@ var Squad = function () {
         key: 'prevent',
         value: function prevent() {
             throw new _errors.Prevent();
+        }
+
+        /**
+         * Connect to ActionEmitter
+         */
+
+    }, {
+        key: '_connect',
+        value: function _connect() {
+            /* Set handler to ActionEmitter */
+            _ActionEmitter2.default.onDispatch(this.context, actionHandler.bind(this));
+
+            /* Set subscribe as listeners to ActionEmitter */
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = (0, _getIterator3.default)((0, _keys2.default)(this.subscribe)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var targetEvent = _step.value;
+
+                    _ActionEmitter2.default.on(targetEvent, listenHandler.bind(this));
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
         }
     }]);
     return Squad;

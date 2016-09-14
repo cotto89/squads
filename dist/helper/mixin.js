@@ -32,9 +32,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Merge object and auto bind this context
  *
  * @param {Object} master
- * @param {Object} src
- * @param {Object} context
- * @param {String[]} ignore
+ * @param {Object} [src]
+ * @param {Object} [context]
+ * @param {String[]} [ignore]
  */
 function mixin(master) {
     var src = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];

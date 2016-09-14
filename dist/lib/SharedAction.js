@@ -16,6 +16,10 @@ var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
 var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
 var _lodash = require('lodash.merge');
 
 var _lodash2 = _interopRequireDefault(_lodash);
@@ -33,29 +37,43 @@ var _ActionEmitter2 = _interopRequireDefault(_ActionEmitter);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* eslint-disable no-use-before-define */
-var SharedAction =
-/**
- * @param {Object} options
- * @param {string} options.context
- * @param {Object[]} [options.mixins]
- */
-function SharedAction(options) {
-    (0, _classCallCheck3.default)(this, SharedAction);
-    var context = options.context;
-    var mixins = options.mixins;
+var SharedAction = function () {
+    /**
+     * @param {Object} options
+     * @param {string} options.context
+     * @param {Object[]} [options.mixins]
+     */
+    function SharedAction(options) {
+        (0, _classCallCheck3.default)(this, SharedAction);
+        var context = options.context;
+        var mixins = options.mixins;
 
 
-    if (process.env.NODE_ENV !== 'production') {
-        (0, _asserts.hasContext)(context);
+        if (process.env.NODE_ENV !== 'production') {
+            (0, _asserts.hasContext)(context);
+        }
+
+        this.context = context;
+
+        var $mixins = Array.isArray(mixins) ? mixins : [];
+        var src = _lodash2.default.apply(undefined, [{}].concat((0, _toConsumableArray3.default)($mixins), [options]));
+        (0, _mixin2.default)(this, src, this, ['context', 'mixins']);
     }
 
-    this.context = context;
+    /**
+     * Connect to ActionEmitter
+     */
 
-    var $mixins = Array.isArray(mixins) ? mixins : [];
-    var src = _lodash2.default.apply(undefined, [{}].concat((0, _toConsumableArray3.default)($mixins), [options]));
-    (0, _mixin2.default)(this, src, this, ['context', 'mixins']);
-    _ActionEmitter2.default.register(this.context, handler.bind(this));
-};
+
+    (0, _createClass3.default)(SharedAction, [{
+        key: '_connect',
+        value: function _connect() {
+            /* Set handler to ActionEmitter */
+            _ActionEmitter2.default.register(this.context, handler.bind(this));
+        }
+    }]);
+    return SharedAction;
+}();
 
 /**
  * @param {string} actionName
