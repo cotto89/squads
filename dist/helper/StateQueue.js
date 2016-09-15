@@ -16,31 +16,34 @@ var _asserts = require('./asserts.js');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Processor = function () {
-    function Processor(event) {
-        (0, _classCallCheck3.default)(this, Processor);
+var StateQueue = function () {
+    /**
+     * @param {string} event
+     */
+    function StateQueue(event) {
+        (0, _classCallCheck3.default)(this, StateQueue);
 
         this.event = event;
-        this.state = [];
+        this.status = [];
     }
 
-    (0, _createClass3.default)(Processor, [{
-        key: 'pushState',
-        value: function pushState(value) {
+    (0, _createClass3.default)(StateQueue, [{
+        key: 'push',
+        value: function push(value) {
             if (process.env.NODE_ENV !== 'production') {
                 (0, _asserts.refusePromise)(this.event, value);
             }
 
-            this.state.push(value);
-            return this.state;
+            this.status.push(value);
+            return this.status;
         }
     }, {
         key: 'stateCount',
         get: function get() {
-            return this.state.length;
+            return this.status.length;
         }
     }]);
-    return Processor;
+    return StateQueue;
 }();
 
-exports.default = Processor;
+exports.default = StateQueue;

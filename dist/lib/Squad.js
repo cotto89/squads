@@ -48,9 +48,9 @@ var _ActionEmitter = require('./ActionEmitter.js');
 
 var _ActionEmitter2 = _interopRequireDefault(_ActionEmitter);
 
-var _Processor = require('./../helper/Processor.js');
+var _StateQueue = require('./../helper/StateQueue.js');
 
-var _Processor2 = _interopRequireDefault(_Processor);
+var _StateQueue2 = _interopRequireDefault(_StateQueue);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -151,24 +151,24 @@ var Squad = function () {
             }
 
             var event = this.context + '.' + actionName;
-            var processor = new _Processor2.default(event);
+            var queue = new _StateQueue2.default(event);
 
             try {
-                processor.pushState(this.state);
-                this.afterEach && processor.pushState(this.afterEach(actionName, this.state));
-                this.after[actionName] && processor.pushState(this.after[actionName](this.state));
+                queue.push(this.state);
+                this.afterEach && queue.push(this.afterEach(actionName, this.state));
+                this.after[actionName] && queue.push(this.after[actionName](this.state));
             } catch (error) {
                 handleError(error);
                 return;
             }
 
-            this.setState.apply(this, (0, _toConsumableArray3.default)(processor.state));
+            this.setState.apply(this, (0, _toConsumableArray3.default)(queue.status));
             _StateDispatcher2.default.dispatchState(this.context, this.state);
             _ActionEmitter2.default.publish(event, this.state);
         }
 
         /**
-         * Prevent actionHander or listenHandler transaction.
+         * Prevent actionHander or listenerHandler transaction.
          * When this api is called, no change state, no publish event.
          */
 
@@ -197,7 +197,7 @@ var Squad = function () {
                 for (var _iterator = (0, _getIterator3.default)((0, _keys2.default)(this.subscribe)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                     var targetEvent = _step.value;
 
-                    _ActionEmitter2.default.on(targetEvent, listenHandler.bind(this));
+                    _ActionEmitter2.default.on(targetEvent, listenerHandler.bind(this));
                 }
             } catch (err) {
                 _didIteratorError = true;
@@ -248,7 +248,7 @@ function actionHandler(actionName) {
     }
 
     var event = this.context + '.' + actionName;
-    var processor = new _Processor2.default(event);
+    var queue = new _StateQueue2.default(event);
     var actionResult = void 0;
 
     try {
@@ -266,14 +266,14 @@ function actionHandler(actionName) {
         this.before[actionName] && (_before = this.before)[actionName].apply(_before, value);
 
         actionResult = action.apply(undefined, value);
-        processor.pushState(actionResult);
+        queue.push(actionResult);
 
         if (actionResult && this.afterEach) {
-            processor.pushState(this.afterEach(actionName, actionResult));
+            queue.push(this.afterEach(actionName, actionResult));
         }
 
         if (actionResult && this.after[actionName]) {
-            processor.pushState(this.after[actionName](actionResult));
+            queue.push(this.after[actionName](actionResult));
         }
     } catch (error) {
         handleError(error);
@@ -281,7 +281,7 @@ function actionHandler(actionName) {
     }
 
     if (!actionResult) return;
-    this.setState.apply(this, (0, _toConsumableArray3.default)(processor.state));
+    this.setState.apply(this, (0, _toConsumableArray3.default)(queue.status));
     _StateDispatcher2.default.dispatchState(this.context, this.state);
     _ActionEmitter2.default.publish(event, this.state);
 }
@@ -290,24 +290,26 @@ function actionHandler(actionName) {
  * @param {string} event
  * @param {any} [value]
  */
-function listenHandler(event) {
+function listenerHandler(event) {
     var listener = this.subscribe[event];
     if (!listener) return;
 
-    var processor = new _Processor2.default(event);
+    var queue = new _StateQueue2.default(event);
+    var nextState = void 0;
 
     try {
         for (var _len4 = arguments.length, value = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
             value[_key4 - 1] = arguments[_key4];
         }
 
-        processor.pushState(listener.apply(undefined, value));
+        nextState = listener.apply(undefined, value);
+        queue.push(nextState);
     } catch (error) {
         handleError(error);
         return;
     }
 
-    if (processor.stateCount <= 0) return;
-    this.setState.apply(this, (0, _toConsumableArray3.default)(processor.state));
+    if (!nextState || queue.stateCount <= 0) return;
+    this.setState.apply(this, (0, _toConsumableArray3.default)(queue.status));
     _StateDispatcher2.default.dispatchState(this.context, this.state);
 }
