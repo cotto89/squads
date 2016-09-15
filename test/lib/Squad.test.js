@@ -74,6 +74,12 @@ describe('Squad', function() {
             this.counter.setState({ count: 1 });
             assert.deepEqual(this.counter.state, { count: 1 });
         });
+
+        it('update state when multi args', function() {
+            assert.deepEqual(this.counter.state, { count: 0 });
+            this.counter.setState({ count: 1 }, undefined, null, { count: 2 });
+            assert.deepEqual(this.counter.state, { count: 2 });
+        });
     });
 
 
@@ -90,23 +96,40 @@ describe('Squad', function() {
 
 
     describe('#forceUpdate', function() {
-        beforeEach(function() {
-            this.counter = merge(this.counter, { context: '$counter' });
-            this.store = store({ squads: [this.counter], sharedActions: [this.shared] });
-        });
-
         context('when pass action', function() {
             specify('state is dispatched and publish event', function() {
-                emitter.on('$counter.action', (event, state) => {
-                    assert.equal(event, '$counter.action');
+                emitter.on('counter.action', (event, state) => {
+                    assert.equal(event, 'counter.action');
                     assert.deepEqual(state, { count: 0 });
                 });
 
                 this.store.onChange((state) => {
-                    assert.deepEqual(state, { $counter: { count: 0 } });
+                    assert.deepEqual(state, { counter: { count: 0 } });
                 });
 
                 this.counter.forceUpdate('action');
+            });
+
+            it('called after(Each) hook', function() {
+                const $counter = new Squad(merge(this.counterSrc, {
+                    context: '$counter',
+                    after: {
+                        action(state) {
+                            assert.deepEqual(state, { count: 0 });
+                        }
+                    },
+                    afterEach(action, state) {
+                        assert.deepEqual(state, { count: 0 });
+                        return { count: 10 };
+                    }
+                }));
+
+                store({ squads: [$counter] }).onChange(state => {
+                    assert.deepEqual(state, { $counter: { count: 10 } });
+                });
+
+                $counter.forceUpdate('action');
+                assert.deepEqual($counter.state, { count: 10 });
             });
         });
 
@@ -550,6 +573,42 @@ describe('Squad', function() {
                 { afterEach: { up: { count: 10 } } },
                 { after: { count: 10 } }
             ]);
+        });
+
+        it('can modify state by after when return state', function() {
+            const counter = new Squad(merge(this.counterSrc, {
+                context: '$counter',
+                after: {
+                    up(state) {
+                        return { count: state.count * 10 };
+                    }
+                }
+            }));
+
+            store({ squads: [counter] });
+
+            assert.deepEqual(counter.state, { count: 0 });
+            dispatch('$counter.up', 10);
+            assert.deepEqual(counter.state, { count: 100 });
+        });
+
+
+        it('can modify state by afterEach when return state', function() {
+            const counter = new Squad(merge(this.counterSrc, {
+                context: '$counter',
+                afterEach(action, state) {
+                    if (action === 'up') {
+                        return { count: state.count * 10 };
+                    }
+                    return state;
+                }
+            }));
+
+            store({ squads: [counter] });
+
+            assert.deepEqual(counter.state, { count: 0 });
+            dispatch('$counter.up', 10);
+            assert.deepEqual(counter.state, { count: 100 });
         });
     });
 });

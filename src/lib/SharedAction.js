@@ -41,13 +41,14 @@ export default class SharedAction {
  */
 function handler(actionName, ...value) {
     const action = this[actionName];
+    const event = `${this.context}.${actionName}`;
 
     if (process.env.NODE_ENV !== 'production') {
         hasAction(this.context, actionName, action);
     }
 
     Promise.resolve(action(...value))
-        .then(result => emitter.publish(`${this.context}.${actionName}`, result))
+        .then(result => emitter.publish(event, result))
         .catch(err => {
             emitter.publish('$error', err);
             console.error(err);
