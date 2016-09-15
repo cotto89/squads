@@ -97,7 +97,7 @@ export default class Squad {
     }
 
     /**
-     * Prevent actionHander or listenHandler transaction.
+     * Prevent actionHander or listenerHandler transaction.
      * When this api is called, no change state, no publish event.
      */
     prevent() {
@@ -114,7 +114,7 @@ export default class Squad {
 
         /* Set subscribe as listeners to ActionEmitter */
         for (const targetEvent of Object.keys(this.subscribe)) {
-            emitter.on(targetEvent, listenHandler.bind(this));
+            emitter.on(targetEvent, listenerHandler.bind(this));
         }
     }
 }
@@ -182,20 +182,22 @@ function actionHandler(actionName, ...value) {
  * @param {string} event
  * @param {any} [value]
  */
-function listenHandler(event, ...value) {
+function listenerHandler(event, ...value) {
     const listener = this.subscribe[event];
     if (!listener) return;
 
     const processor = new Processor(event);
+    let nextState;
 
     try {
-        processor.pushState(listener(...value));
+        nextState = listener(...value);
+        processor.pushState(nextState);
     } catch (error) {
         handleError(error);
         return;
     }
 
-    if (processor.stateCount <= 0) return;
+    if (!nextState || processor.stateCount <= 0) return;
     this.setState(...processor.state);
     dispatcher.dispatchState(this.context, this.state);
 }
