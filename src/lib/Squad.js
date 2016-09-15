@@ -79,6 +79,10 @@ export default class Squad {
             return;
         }
 
+        if (process.env.NODE_ENV !== 'production') {
+            hasAction(this.context, actionName, this.actions[actionName]);
+        }
+
         const event = `${this.context}.${actionName}`;
         const queue = new StateQueue(event);
 

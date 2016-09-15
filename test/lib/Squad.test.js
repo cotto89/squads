@@ -107,7 +107,7 @@ describe('Squad', function() {
                     assert.deepEqual(state, { counter: { count: 0 } });
                 });
 
-                this.counter.forceUpdate('action');
+                this.counter.forceUpdate('up');
             });
 
             it('called after(Each) hook', function() {
@@ -128,7 +128,7 @@ describe('Squad', function() {
                     assert.deepEqual(state, { $counter: { count: 10 } });
                 });
 
-                $counter.forceUpdate('action');
+                $counter.forceUpdate('up');
                 assert.deepEqual($counter.state, { count: 10 });
             });
         });
