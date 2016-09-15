@@ -42,8 +42,13 @@ export default function store(options) {
         dispatcher.on('state:change', handler);
     }
 
+    function unlisten(handler) {
+        dispatcher.removeListener('state:change', handler);
+    }
+
     return {
         getState,
-        onChange
+        onChange,
+        unlisten
     };
 }

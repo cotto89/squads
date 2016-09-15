@@ -126,8 +126,13 @@ function store(options) {
         _StateDispatcher2.default.on('state:change', handler);
     }
 
+    function unlisten(handler) {
+        _StateDispatcher2.default.removeListener('state:change', handler);
+    }
+
     return {
         getState: getState,
-        onChange: onChange
+        onChange: onChange,
+        unlisten: unlisten
     };
 }

@@ -17,9 +17,10 @@ describe('store()', function() {
         dispatcher._clear();
     });
 
-    it('return getState(), onChange()', function() {
+    it('return getState(), onChange(), unlisten()', function() {
         assert(isFunction(this.store.getState));
         assert(isFunction(this.store.onChange));
+        assert(isFunction(this.store.unlisten));
     });
 
 
@@ -41,6 +42,20 @@ describe('store()', function() {
             });
 
             dispatch('counter.up');
+        });
+    });
+
+
+    describe('unlisten()', function() {
+        it('remove listener from StateDispatcher', function() {
+            const handlerA = () => {};
+            const handlerB = () => {};
+            this.store.onChange(handlerA);
+            this.store.onChange(handlerB);
+            assert.strictEqual(dispatcher._events['state:change'].length, 2);
+
+            this.store.unlisten(handlerA);
+            assert.strictEqual(dispatcher._events['state:change'].length, 1);
         });
     });
 });
