@@ -32,10 +32,6 @@ var _lodash = require('lodash.merge');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _lodash3 = require('lodash.isplainobject');
-
-var _lodash4 = _interopRequireDefault(_lodash3);
-
 var _mixin = require('./../helper/mixin.js');
 
 var _mixin2 = _interopRequireDefault(_mixin);
@@ -51,6 +47,10 @@ var _StateDispatcher2 = _interopRequireDefault(_StateDispatcher);
 var _ActionEmitter = require('./ActionEmitter.js');
 
 var _ActionEmitter2 = _interopRequireDefault(_ActionEmitter);
+
+var _Processor = require('./../helper/Processor.js');
+
+var _Processor2 = _interopRequireDefault(_Processor);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -101,8 +101,12 @@ var Squad = function () {
 
     (0, _createClass3.default)(Squad, [{
         key: 'setState',
-        value: function setState(nextState) {
-            this.state = (0, _assign2.default)({}, this.state, nextState);
+        value: function setState() {
+            for (var _len = arguments.length, nextState = Array(_len), _key = 0; _key < _len; _key++) {
+                nextState[_key] = arguments[_key];
+            }
+
+            this.state = _assign2.default.apply(Object, [{}, this.state].concat(nextState));
             return this.state;
         }
 
@@ -116,8 +120,8 @@ var Squad = function () {
     }, {
         key: 'trigger',
         value: function trigger(event) {
-            for (var _len = arguments.length, value = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-                value[_key - 1] = arguments[_key];
+            for (var _len2 = arguments.length, value = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+                value[_key2 - 1] = arguments[_key2];
             }
 
             _ActionEmitter2.default.trigger.apply(_ActionEmitter2.default, [event].concat(value));
@@ -140,9 +144,27 @@ var Squad = function () {
 
     }, {
         key: 'forceUpdate',
-        value: function forceUpdate(action) {
+        value: function forceUpdate(actionName) {
+            if (!actionName) {
+                _StateDispatcher2.default.dispatchState(this.context, this.state);
+                return;
+            }
+
+            var event = this.context + '.' + actionName;
+            var processor = new _Processor2.default(event);
+
+            try {
+                processor.pushState(this.state);
+                this.afterEach && processor.pushState(this.afterEach(actionName, this.state));
+                this.after[actionName] && processor.pushState(this.after[actionName](this.state));
+            } catch (error) {
+                handleError(error);
+                return;
+            }
+
+            this.setState.apply(this, (0, _toConsumableArray3.default)(processor.state));
             _StateDispatcher2.default.dispatchState(this.context, this.state);
-            action && _ActionEmitter2.default.publish(this.context + '.' + action, this.state);
+            _ActionEmitter2.default.publish(event, this.state);
         }
 
         /**
@@ -194,64 +216,74 @@ var Squad = function () {
         }
     }]);
     return Squad;
-}();
+}(); /* eslint-disable no-use-before-define */
+
+
+exports.default = Squad;
+
+
+function handleError(error) {
+    _ActionEmitter2.default.publish('$error', error);
+
+    if (error.name === 'Prevent') return;
+    if (error.name === 'RefusePromise') {
+        if (process.env.NODE_ENV !== 'test') {
+            console.error(error.message);
+        }
+        return;
+    }
+
+    console.error(error);
+}
 
 /**
  * @param {string} actionName
  * @param {any} [value]
  */
-/* eslint-disable no-use-before-define */
-
-exports.default = Squad;
 function actionHandler(actionName) {
     var action = this.actions[actionName];
-    var nextState = void 0;
+
+    if (process.env.NODE_ENV !== 'production') {
+        (0, _asserts.hasAction)(this.context, actionName, action);
+    }
+
+    var event = this.context + '.' + actionName;
+    var processor = new _Processor2.default(event);
+    var actionResult = void 0;
 
     try {
         var _before;
 
-        if (process.env.NODE_ENV !== 'production') {
-            (0, _asserts.hasAction)(this.context, actionName, action);
+        for (var _len3 = arguments.length, value = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+            value[_key3 - 1] = arguments[_key3];
         }
 
         /*
-         * Exec lifecycle and action.
+         * Exec hooks and action.
          * When stop transaction, You can use this.prevent()
          */
-
-        for (var _len2 = arguments.length, value = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-            value[_key2 - 1] = arguments[_key2];
-        }
-
         this.beforeEach && this.beforeEach.apply(this, [actionName].concat(value));
         this.before[actionName] && (_before = this.before)[actionName].apply(_before, value);
-        nextState = action.apply(undefined, value);
 
-        // https://github.com/cotto89/squads/issues/1
+        actionResult = action.apply(undefined, value);
+        processor.pushState(actionResult);
 
-        if (process.env.NODE_ENV !== 'production') {
-            (0, _asserts.refusePromise)(this.context + '.' + actionName, nextState);
+        if (actionResult && this.afterEach) {
+            processor.pushState(this.afterEach(actionName, actionResult));
         }
 
-        this.afterEach && this.afterEach(actionName, nextState);
-        this.after[actionName] && this.after[actionName](nextState);
+        if (actionResult && this.after[actionName]) {
+            processor.pushState(this.after[actionName](actionResult));
+        }
     } catch (error) {
-        _ActionEmitter2.default.publish('$error', error);
-
-        if (error.name === 'Prevent') return;
-        if (error.name === 'RefusePromise') {
-            if (process.env.NODE_ENV !== 'test') console.error(error.message);
-            return;
-        }
-
-        console.error(error);
+        handleError(error);
         return;
     }
 
-    if (!nextState || !(0, _lodash4.default)(nextState)) return;
-    this.setState(nextState);
+    if (!actionResult) return;
+    this.setState.apply(this, (0, _toConsumableArray3.default)(processor.state));
     _StateDispatcher2.default.dispatchState(this.context, this.state);
-    _ActionEmitter2.default.publish(this.context + '.' + actionName, this.state);
+    _ActionEmitter2.default.publish(event, this.state);
 }
 
 /**
@@ -260,34 +292,22 @@ function actionHandler(actionName) {
  */
 function listenHandler(event) {
     var listener = this.subscribe[event];
-    var nextState = void 0;
-
     if (!listener) return;
 
+    var processor = new _Processor2.default(event);
+
     try {
-        for (var _len3 = arguments.length, value = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-            value[_key3 - 1] = arguments[_key3];
+        for (var _len4 = arguments.length, value = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+            value[_key4 - 1] = arguments[_key4];
         }
 
-        nextState = listener.apply(undefined, value);
-
-        if (process.env.NODE_ENV !== 'production') {
-            (0, _asserts.refusePromise)(event, nextState);
-        }
+        processor.pushState(listener.apply(undefined, value));
     } catch (error) {
-        _ActionEmitter2.default.publish('$error', error);
-
-        if (error.name === 'Prevent') return;
-        if (error.name === 'RefusePromise') {
-            console.error(error.message);
-            return;
-        }
-
-        console.error(error);
+        handleError(error);
         return;
     }
 
-    if (!nextState || !(0, _lodash4.default)(nextState)) return;
-    this.setState(nextState);
+    if (processor.stateCount <= 0) return;
+    this.setState.apply(this, (0, _toConsumableArray3.default)(processor.state));
     _StateDispatcher2.default.dispatchState(this.context, this.state);
 }

@@ -83,9 +83,8 @@ var SharedAction = function () {
 
 exports.default = SharedAction;
 function handler(actionName) {
-    var _this = this;
-
     var action = this[actionName];
+    var event = this.context + '.' + actionName;
 
     if (process.env.NODE_ENV !== 'production') {
         (0, _asserts.hasAction)(this.context, actionName, action);
@@ -96,7 +95,7 @@ function handler(actionName) {
     }
 
     _promise2.default.resolve(action.apply(undefined, value)).then(function (result) {
-        return _ActionEmitter2.default.publish(_this.context + '.' + actionName, result);
+        return _ActionEmitter2.default.publish(event, result);
     }).catch(function (err) {
         _ActionEmitter2.default.publish('$error', err);
         console.error(err);

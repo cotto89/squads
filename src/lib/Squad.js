@@ -1,12 +1,11 @@
 /* eslint-disable no-use-before-define */
-
 import merge from 'lodash.merge';
-import isPlainObject from 'lodash.isplainobject';
 import mixin from './../helper/mixin.js';
 import { Prevent } from './../helper/errors.js';
-import { hasContext, refusePromise, hasAction } from './../helper/asserts.js';
+import { hasContext, hasAction } from './../helper/asserts.js';
 import dispatcher from './StateDispatcher.js';
 import emitter from './ActionEmitter.js';
+import Processor from './../helper/Processor.js';
 
 export default class Squad {
     /**
@@ -45,8 +44,8 @@ export default class Squad {
     /**
      * @param {Object} nextState
      */
-    setState(nextState) {
-        this.state = Object.assign({}, this.state, nextState);
+    setState(...nextState) {
+        this.state = Object.assign({}, this.state, ...nextState);
         return this.state;
     }
 
@@ -74,9 +73,27 @@ export default class Squad {
      *         .then(() => this.forceUpdate('action'))
      * }
      */
-    forceUpdate(action) {
+    forceUpdate(actionName) {
+        if (!actionName) {
+            dispatcher.dispatchState(this.context, this.state);
+            return;
+        }
+
+        const event = `${this.context}.${actionName}`;
+        const processor = new Processor(event);
+
+        try {
+            processor.pushState(this.state);
+            this.afterEach && processor.pushState(this.afterEach(actionName, this.state));
+            this.after[actionName] && processor.pushState(this.after[actionName](this.state));
+        } catch (error) {
+            handleError(error);
+            return;
+        }
+
+        this.setState(...processor.state);
         dispatcher.dispatchState(this.context, this.state);
-        action && emitter.publish(`${this.context}.${action}`, this.state);
+        emitter.publish(event, this.state);
     }
 
     /**
@@ -102,52 +119,62 @@ export default class Squad {
     }
 }
 
+function handleError(error) {
+    emitter.publish('$error', error);
+
+    if (error.name === 'Prevent') return;
+    if (error.name === 'RefusePromise') {
+        if (process.env.NODE_ENV !== 'test') {
+            console.error(error.message);
+        }
+        return;
+    }
+
+    console.error(error);
+}
+
 /**
  * @param {string} actionName
  * @param {any} [value]
  */
 function actionHandler(actionName, ...value) {
     const action = this.actions[actionName];
-    let nextState;
+
+    if (process.env.NODE_ENV !== 'production') {
+        hasAction(this.context, actionName, action);
+    }
+
+    const event = `${this.context}.${actionName}`;
+    const processor = new Processor(event);
+    let actionResult;
 
     try {
-        if (process.env.NODE_ENV !== 'production') {
-            hasAction(this.context, actionName, action);
-        }
-
         /*
-         * Exec lifecycle and action.
+         * Exec hooks and action.
          * When stop transaction, You can use this.prevent()
          */
         this.beforeEach && this.beforeEach(actionName, ...value);
         this.before[actionName] && this.before[actionName](...value);
-        nextState = action(...value);
 
-        // https://github.com/cotto89/squads/issues/1
+        actionResult = action(...value);
+        processor.pushState(actionResult);
 
-        if (process.env.NODE_ENV !== 'production') {
-            refusePromise(`${this.context}.${actionName}`, nextState);
+        if (actionResult && this.afterEach) {
+            processor.pushState(this.afterEach(actionName, actionResult));
         }
 
-        this.afterEach && this.afterEach(actionName, nextState);
-        this.after[actionName] && this.after[actionName](nextState);
+        if (actionResult && this.after[actionName]) {
+            processor.pushState(this.after[actionName](actionResult));
+        }
     } catch (error) {
-        emitter.publish('$error', error);
-
-        if (error.name === 'Prevent') return;
-        if (error.name === 'RefusePromise') {
-            if (process.env.NODE_ENV !== 'test') console.error(error.message);
-            return;
-        }
-
-        console.error(error);
+        handleError(error);
         return;
     }
 
-    if (!nextState || !isPlainObject(nextState)) return;
-    this.setState(nextState);
+    if (!actionResult) return;
+    this.setState(...processor.state);
     dispatcher.dispatchState(this.context, this.state);
-    emitter.publish(`${this.context}.${actionName}`, this.state);
+    emitter.publish(event, this.state);
 }
 
 
@@ -157,30 +184,18 @@ function actionHandler(actionName, ...value) {
  */
 function listenHandler(event, ...value) {
     const listener = this.subscribe[event];
-    let nextState;
-
     if (!listener) return;
 
+    const processor = new Processor(event);
+
     try {
-        nextState = listener(...value);
-
-        if (process.env.NODE_ENV !== 'production') {
-            refusePromise(event, nextState);
-        }
+        processor.pushState(listener(...value));
     } catch (error) {
-        emitter.publish('$error', error);
-
-        if (error.name === 'Prevent') return;
-        if (error.name === 'RefusePromise') {
-            console.error(error.message);
-            return;
-        }
-
-        console.error(error);
+        handleError(error);
         return;
     }
 
-    if (!nextState || !isPlainObject(nextState)) return;
-    this.setState(nextState);
+    if (processor.stateCount <= 0) return;
+    this.setState(...processor.state);
     dispatcher.dispatchState(this.context, this.state);
 }
