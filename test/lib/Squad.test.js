@@ -65,6 +65,13 @@ describe('Squad', function() {
             assert(isFunction(emitter.handlers.counter));
             assert(isFunction(emitter.listeners['shared.clear'][0]));
         });
+
+        it('listen on state:inject on dispatcher', function() {
+            this.store.injectState({ counter: { count: 10 } });
+            assert.deepEqual(this.counter.state, { count: 10 });
+            this.store.injectState({ $$$counter: { count: 100 } });
+            assert.deepEqual(this.counter.state, { count: 10 });
+        });
     });
 
 

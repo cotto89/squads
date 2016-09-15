@@ -39,6 +39,12 @@ export default class Squad {
         const $mixins = Array.isArray(mixins) ? mixins : [];
         const src = merge({}, ...$mixins, options);
         mixin(this, src, this, ['context', 'state', 'mixins']);
+
+        /* Inject state from store. */
+        dispatcher.on('state:inject', (status) => {
+            const $state = status[this.context];
+            $state && this.setState($state);
+        });
     }
 
     /**

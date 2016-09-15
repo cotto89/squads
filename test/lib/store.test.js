@@ -17,10 +17,21 @@ describe('store()', function() {
         dispatcher._clear();
     });
 
-    it('return getState(), onChange(), unlisten()', function() {
+    it('return getState(), onChange(), unlisten(), injectState()', function() {
         assert(isFunction(this.store.getState));
         assert(isFunction(this.store.onChange));
         assert(isFunction(this.store.unlisten));
+        assert(isFunction(this.store.injectState));
+    });
+
+    describe('injectState()', function() {
+        it('dispatch state to Squad', function() {
+            dispatcher.on('state:inject', (status) => {
+                assert.deepEqual(status, { context: { state: true } });
+            });
+
+            this.store.injectState({ context: { state: true } });
+        });
     });
 
 

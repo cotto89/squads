@@ -28,25 +28,42 @@ export default function store(options) {
      * @returns {Object} state - { context: { state }, ... }
      */
     function getState() {
-        const state = {};
+        const status = {};
         for (const squad of squads) {
-            state[squad.context] = squad.state;
+            status[squad.context] = squad.state;
         }
-        return state;
+        return status;
     }
 
     /**
+     * Listen changing state on Squad.
+     *
      * @param {Function} handler
      */
     function onChange(handler) {
         dispatcher.on('state:change', handler);
     }
 
+    /**
+     * Remove listener on StateDispatcher.
+     *
+     * @param {Function} handler
+     */
     function unlisten(handler) {
         dispatcher.removeListener('state:change', handler);
     }
 
+    /**
+     * Inject state from Store to Squad.
+     *
+     * @param {Object} state
+     */
+    function injectState(state) {
+        dispatcher.emit('state:inject', state);
+    }
+
     return {
+        injectState,
         getState,
         onChange,
         unlisten
