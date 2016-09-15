@@ -5,7 +5,7 @@ import { Prevent } from './../helper/errors.js';
 import { hasContext, hasAction } from './../helper/asserts.js';
 import dispatcher from './StateDispatcher.js';
 import emitter from './ActionEmitter.js';
-import Processor from './../helper/Processor.js';
+import StateQueue from './../helper/StateQueue.js';
 
 export default class Squad {
     /**
@@ -80,18 +80,18 @@ export default class Squad {
         }
 
         const event = `${this.context}.${actionName}`;
-        const processor = new Processor(event);
+        const queue = new StateQueue(event);
 
         try {
-            processor.pushState(this.state);
-            this.afterEach && processor.pushState(this.afterEach(actionName, this.state));
-            this.after[actionName] && processor.pushState(this.after[actionName](this.state));
+            queue.push(this.state);
+            this.afterEach && queue.push(this.afterEach(actionName, this.state));
+            this.after[actionName] && queue.push(this.after[actionName](this.state));
         } catch (error) {
             handleError(error);
             return;
         }
 
-        this.setState(...processor.state);
+        this.setState(...queue.status);
         dispatcher.dispatchState(this.context, this.state);
         emitter.publish(event, this.state);
     }
@@ -145,7 +145,7 @@ function actionHandler(actionName, ...value) {
     }
 
     const event = `${this.context}.${actionName}`;
-    const processor = new Processor(event);
+    const queue = new StateQueue(event);
     let actionResult;
 
     try {
@@ -157,14 +157,14 @@ function actionHandler(actionName, ...value) {
         this.before[actionName] && this.before[actionName](...value);
 
         actionResult = action(...value);
-        processor.pushState(actionResult);
+        queue.push(actionResult);
 
         if (actionResult && this.afterEach) {
-            processor.pushState(this.afterEach(actionName, actionResult));
+            queue.push(this.afterEach(actionName, actionResult));
         }
 
         if (actionResult && this.after[actionName]) {
-            processor.pushState(this.after[actionName](actionResult));
+            queue.push(this.after[actionName](actionResult));
         }
     } catch (error) {
         handleError(error);
@@ -172,7 +172,7 @@ function actionHandler(actionName, ...value) {
     }
 
     if (!actionResult) return;
-    this.setState(...processor.state);
+    this.setState(...queue.status);
     dispatcher.dispatchState(this.context, this.state);
     emitter.publish(event, this.state);
 }
@@ -186,18 +186,18 @@ function listenerHandler(event, ...value) {
     const listener = this.subscribe[event];
     if (!listener) return;
 
-    const processor = new Processor(event);
+    const queue = new StateQueue(event);
     let nextState;
 
     try {
         nextState = listener(...value);
-        processor.pushState(nextState);
+        queue.push(nextState);
     } catch (error) {
         handleError(error);
         return;
     }
 
-    if (!nextState || processor.stateCount <= 0) return;
-    this.setState(...processor.state);
+    if (!nextState || queue.stateCount <= 0) return;
+    this.setState(...queue.status);
     dispatcher.dispatchState(this.context, this.state);
 }

@@ -1,21 +1,24 @@
 import { refusePromise } from './asserts.js';
 
-export default class Processor {
+export default class StateQueue {
+    /**
+     * @param {string} event
+     */
     constructor(event) {
         this.event = event;
-        this.state = [];
+        this.status = [];
     }
 
     get stateCount() {
-        return this.state.length;
+        return this.status.length;
     }
 
-    pushState(value) {
+    push(value) {
         if (process.env.NODE_ENV !== 'production') {
             refusePromise(this.event, value);
         }
 
-        this.state.push(value);
-        return this.state;
+        this.status.push(value);
+        return this.status;
     }
 }
