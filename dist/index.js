@@ -8,9 +8,9 @@ var _SharedAction = require('./lib/SharedAction.js');
 
 var _SharedAction2 = _interopRequireDefault(_SharedAction);
 
-var _store = require('./lib/store.js');
+var _Store = require('./lib/Store.js');
 
-var _store2 = _interopRequireDefault(_store);
+var _Store2 = _interopRequireDefault(_Store);
 
 var _ActionEmitter = require('./lib/ActionEmitter.js');
 
@@ -23,7 +23,7 @@ var _StateDispatcher2 = _interopRequireDefault(_StateDispatcher);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = {
-    store: _store2.default,
+    Store: _Store2.default,
     dispatch: _ActionEmitter.dispatch,
     Squad: _Squad2.default,
     SharedAction: _SharedAction2.default,

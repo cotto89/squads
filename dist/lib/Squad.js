@@ -68,6 +68,8 @@ var Squad = function () {
      * @param {Function} [options.afterEach]
      */
     function Squad(options) {
+        var _this = this;
+
         (0, _classCallCheck3.default)(this, Squad);
         var context = options.context;
         var state = options.state;
@@ -92,6 +94,12 @@ var Squad = function () {
         var $mixins = Array.isArray(mixins) ? mixins : [];
         var src = _lodash2.default.apply(undefined, [{}].concat((0, _toConsumableArray3.default)($mixins), [options]));
         (0, _mixin2.default)(this, src, this, ['context', 'state', 'mixins']);
+
+        /* Inject state from store. */
+        _StateDispatcher2.default.on('state:inject', function (status) {
+            var $state = status[_this.context];
+            $state && _this.setState($state);
+        });
     }
 
     /**
@@ -148,6 +156,10 @@ var Squad = function () {
             if (!actionName) {
                 _StateDispatcher2.default.dispatchState(this.context, this.state);
                 return;
+            }
+
+            if (process.env.NODE_ENV !== 'production') {
+                (0, _asserts.hasAction)(this.context, actionName, this.actions[actionName]);
             }
 
             var event = this.context + '.' + actionName;
