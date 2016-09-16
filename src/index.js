@@ -1,11 +1,11 @@
 import Squad from './lib/Squad.js';
 import SharedAction from './lib/SharedAction.js';
-import store from './lib/store.js';
+import Store from './lib/Store.js';
 import actionEmitter, { dispatch } from './lib/ActionEmitter.js';
 import stateDispatcher from './lib/StateDispatcher.js';
 
 module.exports = {
-    store,
+    Store,
     dispatch,
     Squad,
     SharedAction,

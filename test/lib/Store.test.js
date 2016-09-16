@@ -1,30 +1,23 @@
 import assert from 'power-assert';
 import cloneDeep from 'lodash.clonedeep';
-import isFunction from 'lodash.isfunction';
-import { store, dispatch, Squad } from './../../src/index.js';
+import { Store, dispatch, Squad } from './../../src/index.js';
 import dispatcher from './../../src/lib/StateDispatcher.js';
 import emitter from './../../src/lib/ActionEmitter.js';
 import { counterSrc } from './../fixtures.js';
 
-describe('store()', function() {
+describe('Store', function() {
     beforeEach(function() {
         this.counter = new Squad(cloneDeep(counterSrc));
-        this.store = store({ squads: [this.counter] });
+        this.store = new Store({ squads: [this.counter] });
     });
+
 
     afterEach(function() {
         emitter._clear();
         dispatcher._clear();
     });
 
-    it('return getState(), onChange(), unlisten(), injectState()', function() {
-        assert(isFunction(this.store.getState));
-        assert(isFunction(this.store.onChange));
-        assert(isFunction(this.store.unlisten));
-        assert(isFunction(this.store.injectState));
-    });
-
-    describe('injectState()', function() {
+    describe('#injectState()', function() {
         it('dispatch state to Squad', function() {
             dispatcher.on('state:inject', (status) => {
                 assert.deepEqual(status, { context: { state: true } });
@@ -35,7 +28,7 @@ describe('store()', function() {
     });
 
 
-    describe('getState()', function() {
+    describe('#getState()', function() {
         it('return squads state', function() {
             assert.deepEqual(this.store.getState(), {
                 counter: { count: 0 }
@@ -44,7 +37,7 @@ describe('store()', function() {
     });
 
 
-    describe('onChange()', function() {
+    describe('#onChange()', function() {
         it('dispatched nextState', function() {
             this.store.onChange((nextState) => {
                 assert.deepEqual(nextState, {
@@ -57,7 +50,7 @@ describe('store()', function() {
     });
 
 
-    describe('unlisten()', function() {
+    describe('#unlisten()', function() {
         it('remove listener from StateDispatcher', function() {
             const handlerA = () => {};
             const handlerB = () => {};

@@ -1,8 +1,9 @@
+/* eslint-disable no-new */
 import assert from 'power-assert';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import isFunction from 'lodash.isfunction';
-import { store, dispatch, Squad, SharedAction } from './../../src/index.js';
+import { Store, dispatch, Squad, SharedAction } from './../../src/index.js';
 import dispatcher from './../../src/lib/StateDispatcher.js';
 import emitter from './../../src/lib/ActionEmitter.js';
 import { counterSrc, sharedSrc } from './../fixtures.js';
@@ -13,7 +14,7 @@ describe('Squad', function() {
         this.sharedSrc = cloneDeep(sharedSrc);
         this.shared = new SharedAction(this.sharedSrc);
         this.counter = new Squad(this.counterSrc);
-        this.store = store({ squads: [this.counter], sharedActionss: [this.shared] });
+        this.store = new Store({ squads: [this.counter], sharedActionss: [this.shared] });
     });
 
     afterEach(function() {
@@ -131,7 +132,7 @@ describe('Squad', function() {
                     }
                 }));
 
-                store({ squads: [$counter] }).onChange(state => {
+                new Store({ squads: [$counter] }).onChange(state => {
                     assert.deepEqual(state, { $counter: { count: 10 } });
                 });
 
@@ -202,7 +203,7 @@ describe('Squad', function() {
                     }
                 }));
 
-                const $store = store({ squads: [$counter], sharedActions: [$shared] });
+                const $store = new Store({ squads: [$counter], sharedActions: [$shared] });
 
                 dispatch('$counter.up');
                 assert.deepEqual($counter.state, { count: 1 });
@@ -231,7 +232,7 @@ describe('Squad', function() {
                     this.called = true;
                 });
 
-                this.store = store({ squads: [this.$counter] });
+                this.store = new Store({ squads: [this.$counter] });
             });
 
             it('update state', function() {
@@ -271,7 +272,7 @@ describe('Squad', function() {
                         this.called = true;
                     });
 
-                    this.store = store({ squads: [this.$counter] });
+                    this.store = new Store({ squads: [this.$counter] });
                 });
 
                 it('update state', function() {
@@ -313,7 +314,7 @@ describe('Squad', function() {
                         this.called = true;
                     });
 
-                    this.store = store({ squads: [this.$counter] });
+                    this.store = new Store({ squads: [this.$counter] });
                 });
 
                 it('update state', function() {
@@ -356,7 +357,7 @@ describe('Squad', function() {
                     this.called = true;
                 });
 
-                this.store = store({ squads: [this.$counter] });
+                this.store = new Store({ squads: [this.$counter] });
             });
 
 
@@ -410,7 +411,7 @@ describe('Squad', function() {
                     }
                 }));
 
-                this.store = store({ squads: [this.$counter] });
+                this.store = new Store({ squads: [this.$counter] });
             });
 
             context('when return Promise', function() {
@@ -508,7 +509,7 @@ describe('Squad', function() {
                 }
             }));
 
-            this.store = store({ squads: [this.counter], sharedActions: [this.shared] });
+            this.store = new Store({ squads: [this.counter], sharedActions: [this.shared] });
         });
 
         it('can listen other Squad action', function() {
@@ -571,7 +572,7 @@ describe('Squad', function() {
                 }
             }));
 
-            store({ squads: [counter] });
+            new Store({ squads: [counter] });
 
             dispatch('$counter.up', 10);
             assert.deepEqual(hookResult, [
@@ -592,7 +593,7 @@ describe('Squad', function() {
                 }
             }));
 
-            store({ squads: [counter] });
+            new Store({ squads: [counter] });
 
             assert.deepEqual(counter.state, { count: 0 });
             dispatch('$counter.up', 10);
@@ -611,7 +612,7 @@ describe('Squad', function() {
                 }
             }));
 
-            store({ squads: [counter] });
+            new Store({ squads: [counter] });
 
             assert.deepEqual(counter.state, { count: 0 });
             dispatch('$counter.up', 10);
