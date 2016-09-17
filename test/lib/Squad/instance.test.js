@@ -3,9 +3,9 @@ import assert from 'power-assert';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import isFunction from 'lodash.isfunction';
-import { Store, Squad, SharedAction } from './../../src/index.js';
-import emitter from './../../src/lib/ActionEmitter.js';
-import { counterSrc, sharedSrc } from './../fixtures.js';
+import { Store, Squad, SharedAction } from './../../../src/index.js';
+import emitter from './../../../src/lib/ActionEmitter.js';
+import { counterSrc, sharedSrc } from './../../fixtures.js';
 
 describe('Squad', function() {
     beforeEach(function() {
