@@ -14,6 +14,9 @@ export const counterSrc = {
     subscribe: {
         'shared.clear': function(num = 0) {
             return { count: num };
+        },
+        'shared.asyncClear': function(num) {
+            return { count: num };
         }
     }
 };
