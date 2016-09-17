@@ -16,9 +16,9 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 
 var _createClass3 = _interopRequireDefault(_createClass2);
 
-var _StateDispatcher = require('./StateDispatcher.js');
+var _StatusDispatcher = require('./StatusDispatcher.js');
 
-var _StateDispatcher2 = _interopRequireDefault(_StateDispatcher);
+var _StatusDispatcher2 = _interopRequireDefault(_StatusDispatcher);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -30,10 +30,13 @@ var Store = function () {
      * @param {SharedAction[]} [options.sharedActions]
      */
     function Store(options) {
+        var _this = this;
+
         (0, _classCallCheck3.default)(this, Store);
 
         this.squads = options.squads || [];
         this.sharedActions = options.sharedActions || [];
+        this.dispatcher = new _StatusDispatcher2.default();
 
         /* Connect Squads to emitter and dispatcher */
         var _iteratorNormalCompletion = true;
@@ -44,7 +47,7 @@ var Store = function () {
             for (var _iterator = (0, _getIterator3.default)(this.squads), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                 var squad = _step.value;
 
-                squad._connect();
+                squad._connect(this.dispatcher);
             }
 
             /* Connect SharedAction to emitter */
@@ -71,7 +74,7 @@ var Store = function () {
             for (var _iterator2 = (0, _getIterator3.default)(this.sharedActions), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                 var shared = _step2.value;
 
-                shared._connect();
+                shared._connect(this.dispatcher);
             }
         } catch (err) {
             _didIteratorError2 = true;
@@ -87,18 +90,22 @@ var Store = function () {
                 }
             }
         }
+
+        this.dispatcher.onRequest('status', function () {
+            return _this.getStatus();
+        });
     }
 
     /**
-     * Return Squads state
+     * Return Squads status
      *
-     * @returns {Object} state - { context: { state }, ... }
+     * @returns {Object} status
      */
 
 
     (0, _createClass3.default)(Store, [{
-        key: 'getState',
-        value: function getState() {
+        key: 'getStatus',
+        value: function getStatus() {
             var status = {};
             var _iteratorNormalCompletion3 = true;
             var _didIteratorError3 = false;
@@ -129,6 +136,20 @@ var Store = function () {
         }
 
         /**
+         * Return state
+         *
+         * @param {sting} context
+         * @returns {Object} - state
+         */
+
+    }, {
+        key: 'getState',
+        value: function getState(context) {
+            var status = this.getStatus();
+            return status[context];
+        }
+
+        /**
          * Listen changing state on Squad.
          *
          * @param {Function} handler
@@ -137,11 +158,11 @@ var Store = function () {
     }, {
         key: 'onChange',
         value: function onChange(handler) {
-            _StateDispatcher2.default.on('state:change', handler);
+            this.dispatcher.on('state:change', handler);
         }
 
         /**
-         * Remove listener on StateDispatcher.
+         * Remove listener on StatusDispatcher.js.
          *
          * @param {Function} handler
          */
@@ -149,19 +170,19 @@ var Store = function () {
     }, {
         key: 'unlisten',
         value: function unlisten(handler) {
-            _StateDispatcher2.default.removeListener('state:change', handler);
+            this.dispatcher.removeListener('state:change', handler);
         }
 
         /**
-         * Inject state from Store to Squad.
+         * Inject status from Store to Squad.
          *
-         * @param {Object} state
+         * @param {Object} status
          */
 
     }, {
-        key: 'injectState',
-        value: function injectState(state) {
-            _StateDispatcher2.default.emit('state:inject', state);
+        key: 'injectStatus',
+        value: function injectStatus(status) {
+            this.dispatcher.emit('status:inject', status);
         }
     }]);
     return Store;

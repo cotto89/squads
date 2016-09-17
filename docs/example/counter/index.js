@@ -37,7 +37,7 @@ store.onChange(status => {
 class Counter extends Component {
     constructor(props) {
         super(props);
-        this.state = store.getState().counter;
+        this.state = store.getState('counter');
         this.up = () => dispatch('counter.up');
         this.down = () => dispatch('counter.down');
         this.up10 = () => dispatch({ 'counter.up': 10 });

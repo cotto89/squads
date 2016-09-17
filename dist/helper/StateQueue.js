@@ -24,23 +24,29 @@ var StateQueue = function () {
         (0, _classCallCheck3.default)(this, StateQueue);
 
         this.event = event;
-        this.status = [];
+        this.status = {
+            state: []
+        };
     }
 
     (0, _createClass3.default)(StateQueue, [{
         key: 'push',
-        value: function push(value) {
+        value: function push(key, value) {
             if (process.env.NODE_ENV !== 'production') {
                 (0, _asserts.refusePromise)(this.event, value);
             }
 
-            this.status.push(value);
+            if (!this.status[key]) {
+                this.status[key] = [];
+            }
+
+            this.status[key].push(value);
             return this.status;
         }
     }, {
         key: 'stateCount',
         get: function get() {
-            return this.status.length;
+            return this.status.state.length;
         }
     }]);
     return StateQueue;
