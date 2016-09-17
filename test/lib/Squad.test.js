@@ -4,7 +4,7 @@ import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import isFunction from 'lodash.isfunction';
 import { Store, dispatch, Squad, SharedAction } from './../../src/index.js';
-import dispatcher from './../../src/lib/StateDispatcher.js';
+import dispatcher from './../../src/lib/StatusDispatcher.js';
 import emitter from './../../src/lib/ActionEmitter.js';
 import { counterSrc, sharedSrc } from './../fixtures.js';
 
@@ -68,9 +68,9 @@ describe('Squad', function() {
         });
 
         it('listen on state:inject on dispatcher', function() {
-            this.store.injectState({ counter: { count: 10 } });
+            this.store.injectStatus({ counter: { count: 10 } });
             assert.deepEqual(this.counter.state, { count: 10 });
-            this.store.injectState({ $$$counter: { count: 100 } });
+            this.store.injectStatus({ $$$counter: { count: 100 } });
             assert.deepEqual(this.counter.state, { count: 10 });
         });
     });
@@ -157,9 +157,9 @@ describe('Squad', function() {
     describe('actions option', function() {
         context('when return nextState', function() {
             it('update state', function() {
-                assert.deepStrictEqual(this.store.getState(), { counter: { count: 0 } });
+                assert.deepStrictEqual(this.store.getStatus(), { counter: { count: 0 } });
                 dispatch('counter.up');
-                assert.deepStrictEqual(this.store.getState(), { counter: { count: 1 } });
+                assert.deepStrictEqual(this.store.getStatus(), { counter: { count: 1 } });
             });
 
             it('should be dispatched state', function() {
@@ -426,7 +426,7 @@ describe('Squad', function() {
 
                 it('should not be updated state', function() {
                     emitter.on('$error', () => {
-                        assert.deepEqual(this.store.getState(), { $counter: { count: 0 } });
+                        assert.deepEqual(this.store.getState('$counter'), { count: 0 });
                     });
 
                     dispatch('$counter.invalidAsyncUp');

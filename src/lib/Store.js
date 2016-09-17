@@ -1,4 +1,4 @@
-import dispatcher from './StateDispatcher.js';
+import dispatcher from './StatusDispatcher.js';
 
 export default class Store {
     /**
@@ -23,16 +23,28 @@ export default class Store {
     }
 
     /**
-     * Return Squads state
+     * Return Squads status
      *
-     * @returns {Object} state - { context: { state }, ... }
+     * @returns {Object} status
      */
-    getState() {
+    getStatus() {
         const status = {};
         for (const squad of this.squads) {
             status[squad.context] = squad.state;
         }
         return status;
+    }
+
+
+    /**
+     * Return state
+     *
+     * @param {sting} context
+     * @returns {Object} - state
+     */
+    getState(context) {
+        const status = this.getStatus();
+        return status[context];
     }
 
     /**
@@ -45,7 +57,7 @@ export default class Store {
     }
 
     /**
-     * Remove listener on StateDispatcher.
+     * Remove listener on StatusDispatcher.js.
      *
      * @param {Function} handler
      */
@@ -54,11 +66,11 @@ export default class Store {
     }
 
     /**
-     * Inject state from Store to Squad.
+     * Inject status from Store to Squad.
      *
-     * @param {Object} state
+     * @param {Object} status
      */
-    injectState(state) {
-        dispatcher.emit('state:inject', state);
+    injectStatus(status) {
+        dispatcher.emit('status:inject', status);
     }
 }

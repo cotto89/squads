@@ -3,7 +3,7 @@ import merge from 'lodash.merge';
 import mixin from './../helper/mixin.js';
 import { Prevent } from './../helper/errors.js';
 import { hasContext, hasAction } from './../helper/asserts.js';
-import dispatcher from './StateDispatcher.js';
+import dispatcher from './StatusDispatcher.js';
 import emitter from './ActionEmitter.js';
 import StateQueue from './../helper/StateQueue.js';
 
@@ -41,7 +41,7 @@ export default class Squad {
         mixin(this, src, this, ['context', 'state', 'mixins']);
 
         /* Inject state from store. */
-        dispatcher.on('state:inject', (status) => {
+        dispatcher.on('status:inject', (status) => {
             const $state = status[this.context];
             $state && this.setState($state);
         });
@@ -81,7 +81,7 @@ export default class Squad {
      */
     forceUpdate(actionName) {
         if (!actionName) {
-            dispatcher.dispatchState(this.context, this.state);
+            dispatcher.dispatchStatus(this.context, this.state);
             return;
         }
 
@@ -102,7 +102,7 @@ export default class Squad {
         }
 
         this.setState(...queue.status);
-        dispatcher.dispatchState(this.context, this.state);
+        dispatcher.dispatchStatus(this.context, this.state);
         emitter.publish(event, this.state);
     }
 
@@ -183,7 +183,7 @@ function actionHandler(actionName, ...value) {
 
     if (!actionResult) return;
     this.setState(...queue.status);
-    dispatcher.dispatchState(this.context, this.state);
+    dispatcher.dispatchStatus(this.context, this.state);
     emitter.publish(event, this.state);
 }
 
@@ -209,5 +209,5 @@ function listenerHandler(event, ...value) {
 
     if (!nextState || queue.stateCount <= 0) return;
     this.setState(...queue.status);
-    dispatcher.dispatchState(this.context, this.state);
+    dispatcher.dispatchStatus(this.context, this.state);
 }

@@ -1,7 +1,7 @@
 import assert from 'power-assert';
 import cloneDeep from 'lodash.clonedeep';
 import { Store, dispatch, Squad } from './../../src/index.js';
-import dispatcher from './../../src/lib/StateDispatcher.js';
+import dispatcher from './../../src/lib/StatusDispatcher.js';
 import emitter from './../../src/lib/ActionEmitter.js';
 import { counterSrc } from './../fixtures.js';
 
@@ -17,22 +17,28 @@ describe('Store', function() {
         dispatcher._clear();
     });
 
-    describe('#injectState()', function() {
+    describe('#injectStatus()', function() {
         it('dispatch state to Squad', function() {
             dispatcher.on('state:inject', (status) => {
                 assert.deepEqual(status, { context: { state: true } });
             });
 
-            this.store.injectState({ context: { state: true } });
+            this.store.injectStatus({ context: { state: true } });
+        });
+    });
+
+    describe('#getStatus()', function() {
+        it('return squads status', function() {
+            assert.deepEqual(this.store.getStatus(), {
+                counter: { count: 0 }
+            });
         });
     });
 
 
     describe('#getState()', function() {
-        it('return squads state', function() {
-            assert.deepEqual(this.store.getState(), {
-                counter: { count: 0 }
-            });
+        it('return squad state', function() {
+            assert.deepEqual(this.store.getState('counter'), { count: 0 });
         });
     });
 
@@ -51,7 +57,7 @@ describe('Store', function() {
 
 
     describe('#unlisten()', function() {
-        it('remove listener from StateDispatcher', function() {
+        it('remove listener from StatusDispatcher', function() {
             const handlerA = () => {};
             const handlerB = () => {};
             this.store.onChange(handlerA);

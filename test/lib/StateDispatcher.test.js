@@ -1,12 +1,12 @@
 import assert from 'power-assert';
-import { StateDispatcher } from './../../src/lib/StateDispatcher.js';
+import { StatusDispatcher } from './../../src/lib/StatusDispatcher.js';
 
-describe('StateDispatcher', function() {
+describe('StatusDispatcher', function() {
     beforeEach(function() {
-        this.dispatcher = new StateDispatcher();
+        this.dispatcher = new StatusDispatcher();
     });
 
-    describe('#dispatchState', function() {
+    describe('#dispatchStatus', function() {
         const context = 'counter';
         const state = { count: 0 };
 
@@ -17,7 +17,7 @@ describe('StateDispatcher', function() {
                 });
             });
 
-            this.dispatcher.dispatchState(context, state);
+            this.dispatcher.dispatchStatus(context, state);
         });
     });
 });
