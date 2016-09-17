@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { store, Squad, dispatch } from './../../../dist/index.js';
+import { Store, Squad, dispatch } from './../../../dist/index.js';
 
 const counter = new Squad({
     context: 'counter',
     state: { count: 0 },
-    afterEach(action, state) {
-        console.log(state);
+    afterEach(action, { count }) {
+        if (count > 100 || count < -100) {
+            return { count: 0 }
+        }
     },
     actions: {
         up(num = 1) {
@@ -18,14 +20,24 @@ const counter = new Squad({
     }
 });
 
-const $store = store({
+/* Store */
+const store = new Store({
     squads: [counter]
 });
 
+/* logger */
+store.onChange(status => {
+    console.log('==== LOGGER ====');
+    for (const context of Object.keys(status)) {
+        console.log(context, status[context])
+    }
+})
+
+/* View */
 class Counter extends Component {
     constructor(props) {
         super(props);
-        this.state = $store.getState().counter;
+        this.state = store.getState('counter');
         this.up = () => dispatch('counter.up');
         this.down = () => dispatch('counter.down');
         this.up10 = () => dispatch({ 'counter.up': 10 });
@@ -33,8 +45,8 @@ class Counter extends Component {
     }
 
     componentDidMount() {
-        $store.onChange(nextState => {
-            this.setState(nextState.counter);
+        store.onChange(({ counter }) => {
+            counter && this.setState(counter);
         });
     }
 
