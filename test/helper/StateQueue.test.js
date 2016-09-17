@@ -12,14 +12,14 @@ describe('StateQueue', function() {
             assert(Object.keys(this.queue).includes('status', 'event'));
             const { event, status } = this.queue;
             assert.equal(event, 'context.action');
-            assert.deepEqual(status, []);
+            assert.deepEqual(status, { state: [] });
         });
     });
 
     describe('get stateCount', function() {
         it('return state count', function() {
             assert.equal(this.queue.stateCount, 0);
-            this.queue.push({});
+            this.queue.push('state', {});
             assert.equal(this.queue.stateCount, 1);
         });
     });
@@ -28,14 +28,14 @@ describe('StateQueue', function() {
     describe('#push', function() {
         it('should throw RefusePromise when push Promise', function() {
             assert.throws(() => {
-                this.queue.push(Promise.resolve());
+                this.queue.push('state', Promise.resolve());
             }, /RefusePromise/);
         });
 
         it('should add state and return state', function() {
-            const status = this.queue.push({});
-            assert.deepEqual(this.queue.status, [{}]);
-            assert.deepEqual(status, [{}]);
+            const status = this.queue.push('state', {});
+            assert.deepEqual(this.queue.status, { state: [{}] });
+            assert.deepEqual(status, { state: [{}] });
         });
     });
 });

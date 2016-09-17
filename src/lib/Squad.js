@@ -93,15 +93,15 @@ export default class Squad {
         const queue = new StateQueue(event);
 
         try {
-            queue.push(this.state);
-            this.afterEach && queue.push(this.afterEach(actionName, this.state));
-            this.after[actionName] && queue.push(this.after[actionName](this.state));
+            queue.push('state', this.state);
+            this.afterEach && queue.push('state', this.afterEach(actionName, this.state));
+            this.after[actionName] && queue.push('state', this.after[actionName](this.state));
         } catch (error) {
             handleError(error);
             return;
         }
 
-        this.setState(...queue.status);
+        this.setState(...queue.status.state);
         dispatcher.dispatchStatus(this.context, this.state);
         emitter.publish(event, this.state);
     }
@@ -147,7 +147,7 @@ function handleError(error) {
  * @param {string} actionName
  * @param {any} [value]
  */
-function actionHandler(actionName, ...value) {
+function actionHandler(actionName, value) {
     const action = this.actions[actionName];
 
     if (process.env.NODE_ENV !== 'production') {
@@ -163,18 +163,24 @@ function actionHandler(actionName, ...value) {
          * Exec hooks and action.
          * When stop transaction, You can use this.prevent()
          */
-        this.beforeEach && this.beforeEach(actionName, ...value);
-        this.before[actionName] && this.before[actionName](...value);
+        if (this.beforeEach) {
+            queue.push('before', this.beforeEach(actionName, value));
+        }
 
-        actionResult = action(...value);
-        queue.push(actionResult);
+        if (this.before[actionName]) {
+            queue.push('before', this.before[actionName](value));
+        }
+
+        const beforeResult = queue.status.before || [];
+        actionResult = action(value, ...beforeResult);
+        queue.push('state', actionResult);
 
         if (actionResult && this.afterEach) {
-            queue.push(this.afterEach(actionName, actionResult));
+            queue.push('state', this.afterEach(actionName, actionResult));
         }
 
         if (actionResult && this.after[actionName]) {
-            queue.push(this.after[actionName](actionResult));
+            queue.push('state', this.after[actionName](actionResult));
         }
     } catch (error) {
         handleError(error);
@@ -182,7 +188,7 @@ function actionHandler(actionName, ...value) {
     }
 
     if (!actionResult) return;
-    this.setState(...queue.status);
+    this.setState(...queue.status.state);
     dispatcher.dispatchStatus(this.context, this.state);
     emitter.publish(event, this.state);
 }
@@ -201,13 +207,13 @@ function listenerHandler(event, ...value) {
 
     try {
         nextState = listener(...value);
-        queue.push(nextState);
+        queue.push('state', nextState);
     } catch (error) {
         handleError(error);
         return;
     }
 
     if (!nextState || queue.stateCount <= 0) return;
-    this.setState(...queue.status);
+    this.setState(...queue.status.state);
     dispatcher.dispatchStatus(this.context, this.state);
 }

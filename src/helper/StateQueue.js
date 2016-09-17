@@ -6,19 +6,25 @@ export default class StateQueue {
      */
     constructor(event) {
         this.event = event;
-        this.status = [];
+        this.status = {
+            state: []
+        };
     }
 
     get stateCount() {
-        return this.status.length;
+        return this.status.state.length;
     }
 
-    push(value) {
+    push(key, value) {
         if (process.env.NODE_ENV !== 'production') {
             refusePromise(this.event, value);
         }
 
-        this.status.push(value);
+        if (!this.status[key]) {
+            this.status[key] = [];
+        }
+
+        this.status[key].push(value);
         return this.status;
     }
 }
