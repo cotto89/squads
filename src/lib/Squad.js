@@ -3,7 +3,6 @@ import merge from 'lodash.merge';
 import mixin from './../helper/mixin.js';
 import { Prevent } from './../helper/errors.js';
 import { hasContext, hasAction } from './../helper/asserts.js';
-import dispatcher from './StatusDispatcher.js';
 import emitter from './ActionEmitter.js';
 import StateQueue from './../helper/StateQueue.js';
 
@@ -39,12 +38,10 @@ export default class Squad {
         const $mixins = Array.isArray(mixins) ? mixins : [];
         const src = merge({}, ...$mixins, options);
         mixin(this, src, this, ['context', 'state', 'mixins']);
+    }
 
-        /* Inject state from store. */
-        dispatcher.on('status:inject', (status) => {
-            const $state = status[this.context];
-            $state && this.setState($state);
-        });
+    getAppStatus() {
+        return this._dispatcher.request('status');
     }
 
     /**
@@ -81,7 +78,7 @@ export default class Squad {
      */
     forceUpdate(actionName) {
         if (!actionName) {
-            dispatcher.dispatchStatus(this.context, this.state);
+            this._dispatcher.dispatchStatus(this.context, this.state);
             return;
         }
 
@@ -102,7 +99,7 @@ export default class Squad {
         }
 
         this.setState(...queue.status.state);
-        dispatcher.dispatchStatus(this.context, this.state);
+        this._dispatcher.dispatchStatus(this.context, this.state);
         emitter.publish(event, this.state);
     }
 
@@ -117,8 +114,18 @@ export default class Squad {
 
     /**
      * Connect to ActionEmitter
+     *
+     * @param {dispatcher} StatusDispatcher
      */
-    _connect() {
+    _connect(dispatcher) {
+        this._dispatcher = dispatcher;
+
+        /* Inject state from store. */
+        this._dispatcher.on('status:inject', (status) => {
+            const $state = status[this.context];
+            $state && this.setState($state);
+        });
+
         /* Set handler to ActionEmitter */
         emitter.onDispatch(this.context, actionHandler.bind(this));
 
@@ -189,7 +196,7 @@ function actionHandler(actionName, value) {
 
     if (!actionResult) return;
     this.setState(...queue.status.state);
-    dispatcher.dispatchStatus(this.context, this.state);
+    this._dispatcher.dispatchStatus(this.context, this.state);
     emitter.publish(event, this.state);
 }
 
@@ -215,5 +222,5 @@ function listenerHandler(event, ...value) {
 
     if (!nextState || queue.stateCount <= 0) return;
     this.setState(...queue.status.state);
-    dispatcher.dispatchStatus(this.context, this.state);
+    this._dispatcher.dispatchStatus(this.context, this.state);
 }

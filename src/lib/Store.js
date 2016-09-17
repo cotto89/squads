@@ -1,4 +1,4 @@
-import dispatcher from './StatusDispatcher.js';
+import StatusDispatcher from './StatusDispatcher.js';
 
 export default class Store {
     /**
@@ -10,16 +10,20 @@ export default class Store {
     constructor(options) {
         this.squads = options.squads || [];
         this.sharedActions = options.sharedActions || [];
+        this.dispatcher = new StatusDispatcher();
+
 
         /* Connect Squads to emitter and dispatcher */
         for (const squad of this.squads) {
-            squad._connect();
+            squad._connect(this.dispatcher);
         }
 
         /* Connect SharedAction to emitter */
         for (const shared of this.sharedActions) {
-            shared._connect();
+            shared._connect(this.dispatcher);
         }
+
+        this.dispatcher.onRequest('status', () => this.getStatus());
     }
 
     /**
@@ -53,7 +57,7 @@ export default class Store {
      * @param {Function} handler
      */
     onChange(handler) {
-        dispatcher.on('state:change', handler);
+        this.dispatcher.on('state:change', handler);
     }
 
     /**
@@ -62,7 +66,7 @@ export default class Store {
      * @param {Function} handler
      */
     unlisten(handler) {
-        dispatcher.removeListener('state:change', handler);
+        this.dispatcher.removeListener('state:change', handler);
     }
 
     /**
@@ -71,6 +75,6 @@ export default class Store {
      * @param {Object} status
      */
     injectStatus(status) {
-        dispatcher.emit('status:inject', status);
+        this.dispatcher.emit('status:inject', status);
     }
 }

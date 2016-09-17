@@ -3,7 +3,6 @@ import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import isFunction from 'lodash.isfunction';
 import { SharedAction } from './../../src/index.js';
-import dispatcher from './../../src/lib/StatusDispatcher.js';
 import emitter from './../../src/lib/ActionEmitter.js';
 import { sharedSrc } from './../fixtures.js';
 
@@ -14,7 +13,6 @@ describe('SharedAction', function() {
 
     afterEach(function() {
         emitter._clear();
-        dispatcher._clear();
     });
 
 

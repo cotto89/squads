@@ -3,7 +3,6 @@ import assert from 'power-assert';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import { Store, dispatch, Squad } from './../../src/index.js';
-import dispatcher from './../../src/lib/StatusDispatcher.js';
 import emitter from './../../src/lib/ActionEmitter.js';
 import { counterSrc, sharedSrc } from './../fixtures.js';
 
@@ -15,7 +14,6 @@ describe('Squad hooks', function() {
 
     afterEach(function() {
         emitter._clear();
-        dispatcher._clear();
     });
 
     it('emit hooks around action is emitting', function() {

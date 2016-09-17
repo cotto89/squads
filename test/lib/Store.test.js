@@ -1,7 +1,6 @@
 import assert from 'power-assert';
 import cloneDeep from 'lodash.clonedeep';
 import { Store, dispatch, Squad } from './../../src/index.js';
-import dispatcher from './../../src/lib/StatusDispatcher.js';
 import emitter from './../../src/lib/ActionEmitter.js';
 import { counterSrc } from './../fixtures.js';
 
@@ -14,12 +13,12 @@ describe('Store', function() {
 
     afterEach(function() {
         emitter._clear();
-        dispatcher._clear();
+        this.store.dispatcher._clear();
     });
 
     describe('#injectStatus()', function() {
         it('dispatch state to Squad', function() {
-            dispatcher.on('state:inject', (status) => {
+            this.store.dispatcher.on('state:inject', (status) => {
                 assert.deepEqual(status, { context: { state: true } });
             });
 
@@ -62,10 +61,10 @@ describe('Store', function() {
             const handlerB = () => {};
             this.store.onChange(handlerA);
             this.store.onChange(handlerB);
-            assert.strictEqual(dispatcher._events['state:change'].length, 2);
+            assert.strictEqual(this.store.dispatcher._events['state:change'].length, 2);
 
             this.store.unlisten(handlerA);
-            assert.strictEqual(dispatcher._events['state:change'].length, 1);
+            assert.strictEqual(this.store.dispatcher._events['state:change'].length, 1);
         });
     });
 });

@@ -4,7 +4,6 @@ import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import isFunction from 'lodash.isfunction';
 import { Store, Squad, SharedAction } from './../../src/index.js';
-import dispatcher from './../../src/lib/StatusDispatcher.js';
 import emitter from './../../src/lib/ActionEmitter.js';
 import { counterSrc, sharedSrc } from './../fixtures.js';
 
@@ -19,7 +18,7 @@ describe('Squad', function() {
 
     afterEach(function() {
         emitter._clear();
-        dispatcher._clear();
+        this.store.dispatcher._clear();
     });
 
 
@@ -77,6 +76,21 @@ describe('Squad', function() {
         });
     });
 
+    describe('#getAppStatus', function() {
+        it('return AppStatus', function() {
+            const counterA = new Squad(merge(this.counterSrc, { context: 'counterA' }));
+            const counterB = new Squad(merge(this.counterSrc, { context: 'counterB' }));
+            const counterC = new Squad(merge(this.counterSrc, { context: 'counterC' }));
+            new Store({ squads: [counterA, counterB, counterC] });
+            assert.deepEqual(counterA.getAppStatus(), {
+                counterA: { count: 0 },
+                counterB: { count: 0 },
+                counterC: { count: 0 }
+            });
+
+            assert.deepEqual(this.counter.getAppStatus(), { counter: { count: 0 } });
+        });
+    });
 
 
     describe('#setState', function() {

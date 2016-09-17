@@ -3,7 +3,6 @@ import assert from 'power-assert';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import { Store, dispatch, Squad, SharedAction } from './../../src/index.js';
-import dispatcher from './../../src/lib/StatusDispatcher.js';
 import emitter from './../../src/lib/ActionEmitter.js';
 import { counterSrc, sharedSrc } from './../fixtures.js';
 
@@ -18,7 +17,7 @@ describe('Squad actions', function() {
 
     afterEach(function() {
         emitter._clear();
-        dispatcher._clear();
+        this.store.dispatcher._clear();
     });
 
     context('when return nextState', function() {
