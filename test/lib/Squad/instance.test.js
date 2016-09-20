@@ -1,5 +1,6 @@
 /* eslint-disable no-new */
 import assert from 'power-assert';
+import sinon from 'sinon';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import isFunction from 'lodash.isfunction';
@@ -13,7 +14,7 @@ describe('Squad', function() {
         this.sharedSrc = cloneDeep(sharedSrc);
         this.shared = new SharedAction(this.sharedSrc);
         this.counter = new Squad(this.counterSrc);
-        this.store = new Store({ squads: [this.counter], sharedActionss: [this.shared] });
+        this.store = new Store({ squads: [this.counter], sharedActions: [this.shared] });
     });
 
     afterEach(function() {
@@ -34,7 +35,7 @@ describe('Squad', function() {
                 'beforeEach',
                 'afterEach'
             ];
-            expect.forEach(exp => {
+            expect.forEach((exp) => {
                 assert(Object.keys(this.counter).indexOf(exp) > -1);
             });
         });
@@ -110,55 +111,16 @@ describe('Squad', function() {
 
     describe('#trigger', function() {
         it('trigger shared action on ActionEmitter', function() {
-            emitter.register('$shared', function(action, value) {
-                assert.equal(action, 'clear');
-                assert.equal(value, 0);
-            });
-
+            const spy = sinon.spy();
+            emitter.register('$shared', spy);
             this.counter.trigger('$shared.clear', 0);
+            assert(spy.calledWithExactly('clear', 0));
         });
     });
 
 
     describe('#forceUpdate', function() {
-        context('when pass action', function() {
-            specify('state is dispatched and publish event', function() {
-                emitter.on('counter.action', (event, state) => {
-                    assert.equal(event, 'counter.action');
-                    assert.deepEqual(state, { count: 0 });
-                });
-
-                this.store.onChange((status) => {
-                    assert.deepEqual(status, { counter: { count: 0 } });
-                });
-
-                this.counter.forceUpdate('up');
-            });
-
-            it('call after(Each) hook', function() {
-                const $counter = new Squad(merge(this.counterSrc, {
-                    context: '$counter',
-                    after: {
-                        action(state) {
-                            assert.deepEqual(state, { count: 0 });
-                        }
-                    },
-                    afterEach(action, state) {
-                        assert.deepEqual(state, { count: 0 });
-                        return { count: 10 };
-                    }
-                }));
-
-                new Store({ squads: [$counter] }).onChange(state => {
-                    assert.deepEqual(state, { $counter: { count: 10 } });
-                });
-
-                $counter.forceUpdate('up');
-                assert.deepEqual($counter.state, { count: 10 });
-            });
-        });
-
-        context('when dont pass action', function() { /* transfer actions option of Squad */ });
+        /* transfer actions ./actions.test.js */
     });
 
 

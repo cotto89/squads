@@ -49,7 +49,7 @@ function handler(actionName, ...value) {
 
     Promise.resolve(action(...value))
         .then(result => emitter.publish(event, result))
-        .catch(err => {
+        .catch((err) => {
             emitter.publish('$error', err);
             console.error(err);
         });

@@ -1,5 +1,6 @@
 /* eslint-disable no-new */
 import assert from 'power-assert';
+import sinon from 'sinon';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import { Store, dispatch, Squad, SharedAction } from './../../../src/index.js';
@@ -12,12 +13,14 @@ describe('Squad actions', function() {
         this.sharedSrc = cloneDeep(sharedSrc);
         this.shared = new SharedAction(this.sharedSrc);
         this.counter = new Squad(this.counterSrc);
-        this.store = new Store({ squads: [this.counter], sharedActionss: [this.shared] });
+        this.store = new Store({ squads: [this.counter], sharedActions: [this.shared] });
+        this.spy = sinon.spy();
     });
 
     afterEach(function() {
         emitter._clear();
         this.store.dispatcher._clear();
+        this.spy.reset();
     });
 
     context('when return nextState', function() {
@@ -28,64 +31,38 @@ describe('Squad actions', function() {
         });
 
         it('should be dispatched state', function() {
-            this.store.onChange((next) => {
-                assert.deepStrictEqual(next, { counter: { count: 1 } });
-            });
+            this.store.onChange(this.spy);
             dispatch('counter.up');
+
+            assert(this.spy.calledWith({ counter: { count: 1 } }));
         });
 
         it('shuold be published event', function() {
-            emitter.on('counter.up', (ev, val) => {
-                assert.equal(ev, 'counter.up');
-                assert.deepEqual(val, { count: 1 });
-            });
+            emitter.on('counter.up', this.spy);
             dispatch('counter.up');
+            assert(this.spy.calledWith('counter.up', { count: 1 }));
         });
     });
 
 
     context('when trigger SharedAction', function() {
-        it('responce listener on subscribe', function() {
-            let called = false;
-            const $shared = new SharedAction({
-                context: '$shared',
-                clear() {
-                    called = true;
-                    return 0;
-                }
+        it('responce listener on subscribe', function(done) {
+            dispatch('counter.up');
+            assert.deepEqual(this.counter.state, { count: 1 });
+
+            this.store.onChange(this.spy);
+            dispatch('counter.clear');
+
+            setTimeout(() => {
+                assert(this.spy.calledWith({ counter: { count: 0 } }));
+                done();
             });
-
-            const $counter = new Squad(merge(this.counterSrc, {
-                context: '$counter',
-                actions: {
-                    clear() { this.trigger('$shared.clear'); }
-                },
-                subscribe: {
-                    '$shared.clear': function(count) {
-                        assert.equal(count, 0);
-                        return { count };
-                    }
-                }
-            }));
-
-            const $store = new Store({ squads: [$counter], sharedActions: [$shared] });
-
-            dispatch('$counter.up');
-            assert.deepEqual($counter.state, { count: 1 });
-
-            $store.onChange((next) => {
-                assert.deepEqual(next, { $counter: { count: 0 } });
-                assert.equal(called, true);
-            });
-
-            dispatch('$counter.clear');
         });
     });
 
 
     context('when use #setState() on manual', function() {
         beforeEach(function() {
-            this.called = false;
             this.$counter = new Squad(merge(this.counterSrc, {
                 context: '$counter',
                 actions: {
@@ -93,10 +70,7 @@ describe('Squad actions', function() {
                 }
             }));
 
-            emitter.on('$counter.upByManual', () => {
-                this.called = true;
-            });
-
+            emitter.on('$counter.upByManual', this.spy);
             this.store = new Store({ squads: [this.$counter] });
         });
 
@@ -107,14 +81,14 @@ describe('Squad actions', function() {
 
         it('shuold not be published event', function() {
             dispatch('$counter.upByManual');
-            assert.equal(this.called, false);
+            assert.equal(this.spy.called, false);
         });
 
         it('should not be dispatched state', function() {
             dispatch('$counter.upByManual');
-            let called = false;
-            this.store.onChange(() => { called = true; });
-            assert.equal(called, false);
+            const spy = sinon.spy();
+            this.store.onChange(spy);
+            assert.equal(spy.called, false);
         });
     });
 
@@ -122,7 +96,6 @@ describe('Squad actions', function() {
     context('when use #setState() and #forceUpdate() on manual', function() {
         context('when passed actionName to forceUpdate', function() {
             beforeEach(function() {
-                this.called = false;
                 this.$counter = new Squad(merge(this.counterSrc, {
                     context: '$counter',
                     actions: {
@@ -133,10 +106,7 @@ describe('Squad actions', function() {
                     }
                 }));
 
-                emitter.on('$counter.upByManualandForceUpdate', () => {
-                    this.called = true;
-                });
-
+                emitter.on('$counter.upByManualandForceUpdate', this.spy);
                 this.store = new Store({ squads: [this.$counter] });
             });
 
@@ -146,25 +116,21 @@ describe('Squad actions', function() {
             });
 
             it('shuold be published event', function() {
-                dispatch('$counter.upByManualandForceUpdate');
-                assert.equal(this.called, true);
+                dispatch('$counter.upByManualandForceUpdate', 10);
+                assert(this.spy.calledWithExactly('$counter.upByManualandForceUpdate', { count: 1 }));
             });
 
             it('should be dispatched state', function() {
-                let called = false;
-                this.store.onChange((next) => {
-                    called = true;
-                    assert.deepEqual(next, { $counter: { count: 1 } });
-                });
+                const spy = sinon.spy();
+                this.store.onChange(spy);
                 dispatch('$counter.upByManualandForceUpdate');
-                assert.equal(called, true);
+                assert(spy.calledWithExactly({ $counter: { count: 1 } }));
             });
         });
 
 
         context('when not passed actionName to forceUpdate', function() {
             beforeEach(function() {
-                this.called = false;
                 this.$counter = new Squad(merge(this.counterSrc, {
                     context: '$counter',
                     actions: {
@@ -175,10 +141,7 @@ describe('Squad actions', function() {
                     }
                 }));
 
-                emitter.on('$counter.upByManualandForceUpdate', () => {
-                    this.called = true;
-                });
-
+                emitter.on('$counter.upByManualandForceUpdate', this.spy);
                 this.store = new Store({ squads: [this.$counter] });
             });
 
@@ -189,17 +152,14 @@ describe('Squad actions', function() {
 
             it('shuold not be published event', function() {
                 dispatch('$counter.upByManualandForceUpdate');
-                assert.equal(this.called, false);
+                assert.equal(this.spy.called, false);
             });
 
             it('should be dispatched state', function() {
-                let called = false;
-                this.store.onChange((next) => {
-                    called = true;
-                    assert.deepEqual(next, { $counter: { count: 1 } });
-                });
+                const spy = sinon.spy();
+                this.store.onChange(spy);
                 dispatch('$counter.upByManualandForceUpdate');
-                assert.equal(called, true);
+                assert(spy.calledWithExactly({ $counter: { count: 1 } }));
             });
         });
     });
@@ -207,7 +167,6 @@ describe('Squad actions', function() {
 
     context('when called #prevent()', function() {
         beforeEach(function() {
-            this.called = false;
             this.$counter = new Squad(merge(this.counterSrc, {
                 context: '$counter',
                 actions: {
@@ -218,33 +177,26 @@ describe('Squad actions', function() {
                 }
             }));
 
-            emitter.on('$counter.preventUp', () => {
-                this.called = true;
-            });
-
+            emitter.on('$counter.preventUp', this.spy);
             this.store = new Store({ squads: [this.$counter] });
         });
 
 
         it('shuold not update state', function() {
-            this.store.onChange((next) => {
-                assert.deepEqual(next, { count: 0 });
-            });
-
             dispatch('$counter.preventUp');
+            assert.deepEqual(this.$counter.state, { count: 0 });
         });
 
         it('shuold not be published event', function() {
             dispatch('$counter.preventUp');
-            assert.equal(this.called, false);
+            assert.equal(this.spy.called, false);
         });
 
         it('shuold not be dispatched state', function() {
-            let called = false;
-            this.store.onChange(() => { called = true; });
-
+            const spy = sinon.spy();
+            this.store.onChange(spy);
             dispatch('$counter.preventUp');
-            assert.equal(called, false);
+            assert.equal(spy.called, false);
         });
     });
 });
