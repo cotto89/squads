@@ -2,6 +2,7 @@
 import assert from 'power-assert';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
+import sinon from 'sinon';
 import { Store, dispatch, Squad, SharedAction } from './../../../src/index.js';
 import emitter from './../../../src/lib/ActionEmitter.js';
 import { counterSrc, sharedSrc } from './../../fixtures.js';
@@ -45,12 +46,17 @@ describe('Squad subscribe option', function() {
     });
 
 
-    it('can listen SharedAction', function() {
+    it('can listen SharedAction', function(done) {
+        const spy = sinon.spy();
         dispatch('counterA.up');
         assert.deepEqual(this.counterA.state, { count: 1 });
-        this.store.onChange(() => {
-            assert.deepEqual(this.store.getState('counterA'), { count: 0 });
-        });
+
+        this.store.onChange(spy);
         dispatch('counterA.clear');
+
+        setTimeout(() => {
+            assert(spy.calledWith({ counterA: { count: 0 } }));
+            done();
+        });
     });
 });

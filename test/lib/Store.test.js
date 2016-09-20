@@ -1,4 +1,5 @@
 import assert from 'power-assert';
+import sinon from 'sinon';
 import cloneDeep from 'lodash.clonedeep';
 import { Store, dispatch, Squad } from './../../src/index.js';
 import emitter from './../../src/lib/ActionEmitter.js';
@@ -8,21 +9,20 @@ describe('Store', function() {
     beforeEach(function() {
         this.counter = new Squad(cloneDeep(counterSrc));
         this.store = new Store({ squads: [this.counter] });
+        this.spyHandler = sinon.spy();
     });
-
 
     afterEach(function() {
         emitter._clear();
         this.store.dispatcher._clear();
+        this.spyHandler.reset();
     });
 
     describe('#injectStatus()', function() {
         it('dispatch state to Squad', function() {
-            this.store.dispatcher.on('state:inject', (status) => {
-                assert.deepEqual(status, { context: { state: true } });
-            });
-
+            this.store.dispatcher.on('status:inject', this.spyHandler);
             this.store.injectStatus({ context: { state: true } });
+            assert(this.spyHandler.calledWith({ context: { state: true } }));
         });
     });
 
@@ -44,13 +44,9 @@ describe('Store', function() {
 
     describe('#onChange()', function() {
         it('dispatched nextState', function() {
-            this.store.onChange((nextState) => {
-                assert.deepEqual(nextState, {
-                    counter: { count: 1 }
-                });
-            });
-
+            this.store.onChange(this.spyHandler);
             dispatch('counter.up');
+            assert(this.spyHandler.calledWith({ counter: { count: 1 } }));
         });
     });
 

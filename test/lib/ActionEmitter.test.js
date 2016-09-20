@@ -1,4 +1,5 @@
 import assert from 'power-assert';
+import sinon from 'sinon';
 import { ActionEmitter } from './../../src/lib/ActionEmitter.js';
 
 describe('ActionEmitter', function() {
@@ -11,6 +12,21 @@ describe('ActionEmitter', function() {
         it('should add action listener', function() {
             this.emitter.on('ctx.act', cb);
             assert.deepEqual(this.emitter.listeners, { 'ctx.act': [cb] });
+        });
+    });
+
+
+    describe('#publish', function() {
+        it('should emit listener func', function() {
+            const spyA = sinon.spy();
+            const spyB = sinon.spy();
+
+            this.emitter.on('ctx.listen', spyA);
+            this.emitter.on('ctx.listen', spyB);
+            this.emitter.publish('ctx.listen', 'val');
+
+            assert(spyA.calledWithExactly('ctx.listen', 'val'));
+            assert(spyB.calledWithExactly('ctx.listen', 'val'));
         });
     });
 
@@ -31,47 +47,20 @@ describe('ActionEmitter', function() {
 
     describe('#dispatch', function() {
         it('should emit target handler', function() {
-            let calledCount = 0;
+            const spyA = sinon.spy();
+            const spyB = sinon.spy();
             const payload = { 'ctx.act': 100, 'ctx2.sub.act': 1000 };
 
-            this.emitter.onDispatch('ctx', (action, value) => {
-                calledCount++;
-                assert.equal(action, 'act');
-                assert.equal(value, 100);
-            });
-
-            this.emitter.onDispatch('ctx2.sub', (action, value) => {
-                calledCount++;
-                assert.equal(action, 'act');
-                assert.equal(value, 1000);
-            });
+            this.emitter.onDispatch('ctx', spyA);
+            this.emitter.onDispatch('ctx2.sub', spyB);
 
             this.emitter.dispatch(payload);
-            assert.equal(calledCount, 2);
+            assert(spyA.calledWithExactly('act', 100));
+            assert(spyB.calledWithExactly('act', 1000));
         });
     });
 
 
-    describe('#publish', function() {
-        it('should emit listener func', function() {
-            let calledCount = 0;
-
-            this.emitter.on('ctx.listen', (event, value) => {
-                calledCount++;
-                assert.equal(event, 'ctx.listen');
-                assert.equal(value, 'val');
-            });
-
-            this.emitter.on('ctx.listen', (event, value) => {
-                calledCount++;
-                assert.equal(event, 'ctx.listen');
-                assert.equal(value, 'val');
-            });
-
-            this.emitter.publish('ctx.listen', 'val');
-            assert.equal(calledCount, 2);
-        });
-    });
 
     describe('#register', function() {
         it('should add ShardActionHandler to this.shared prop', function() {
@@ -89,12 +78,10 @@ describe('ActionEmitter', function() {
 
     describe('#trigger', function() {
         it('shuold emit SharedAction', function() {
-            this.emitter.register('shared', (action, ...value) => {
-                assert.equal(action, 'action');
-                assert.equal(value, 1);
-            });
-
+            const spy = sinon.spy();
+            this.emitter.register('shared', spy);
             this.emitter.trigger('shared.action', 1);
+            assert(spy.calledWithExactly('action', 1));
         });
 
         it('throw error when handler is notting', function() {

@@ -2,6 +2,7 @@
 import assert from 'power-assert';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
+import sinon from 'sinon';
 import { Store, dispatch, Squad } from './../../../src/index.js';
 import emitter from './../../../src/lib/ActionEmitter.js';
 import { counterSrc, sharedSrc } from './../../fixtures.js';
@@ -17,67 +18,46 @@ describe('Squad hooks', function() {
     });
 
     it('emit hooks around action is emitting', function() {
-        const hookResult = [];
+        const beforeEachSpy = sinon.spy();
+        const beforeSpy = sinon.spy();
+        const afterEachSpy = sinon.spy();
+        const afterSpy = sinon.spy();
+
         const counter = new Squad(merge(this.counterSrc, {
             context: '$counter',
-            beforeEach(action, value) {
-                hookResult.push({
-                    beforeEach: {
-                        [action]: value
-                    }
-                });
-            },
-            afterEach(action, state) {
-                hookResult.push({
-                    afterEach: {
-                        [action]: state
-                    }
-                });
-            },
-            before: {
-                up(value) {
-                    hookResult.push({ before: value });
-                }
-            },
-            after: {
-                up(state) {
-                    hookResult.push({ after: state });
-                }
-            }
+            beforeEach: beforeEachSpy,
+            afterEach: afterEachSpy,
+            before: { up: beforeSpy },
+            after: { up: afterSpy }
         }));
 
         new Store({ squads: [counter] });
 
         dispatch('$counter.up', 10);
-        assert.deepEqual(hookResult, [
-            { beforeEach: { up: 10 } },
-            { before: 10 },
-            { afterEach: { up: { count: 10 } } },
-            { after: { count: 10 } }
-        ]);
+
+        assert(beforeEachSpy.calledWith('up', 10));
+        assert(beforeSpy.calledWith(10));
+        assert(afterEachSpy.calledWith('up', { count: 10 }));
+        assert(afterSpy.calledWith({ count: 10 }));
     });
 
     it('can pass value form before(Each) hook to action', function() {
+        const beforeSpy = sinon.spy(count => count * 10);
+        const beforeEachSpy = sinon.spy((action, count) => ({
+            [action]: count * 10
+        }));
+        const upSpy = sinon.spy();
+
         const counter = new Squad(merge(this.counterSrc, {
-            before: {
-                up(value) {
-                    return value * 10;
-                }
-            },
-            beforeEach(action, value) {
-                return {
-                    [action]: value * 10
-                };
-            },
-            actions: {
-                up(num = 1, ...beforeResult) {
-                    assert.deepEqual(beforeResult, [{ up: 10 }, 10]);
-                }
-            }
+            before: { up: beforeSpy },
+            beforeEach: beforeEachSpy,
+            actions: { up: upSpy }
         }));
 
         new Store({ squads: [counter] });
         dispatch('counter.up', 1);
+
+        assert(upSpy.calledWithExactly(1, { up: 10 }, 10));
     });
 
 

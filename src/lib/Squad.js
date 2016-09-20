@@ -1,4 +1,4 @@
-/* eslint-disable no-use-before-define */
+/* eslint-disable no-use-before-define, class-methods-use-this*/
 import merge from 'lodash.merge';
 import mixin from './../helper/mixin.js';
 import { Prevent } from './../helper/errors.js';
