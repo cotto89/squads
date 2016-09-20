@@ -50,7 +50,7 @@ var _StateQueue2 = _interopRequireDefault(_StateQueue);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/* eslint-disable no-use-before-define */
+/* eslint-disable no-use-before-define, class-methods-use-this*/
 var Squad = function () {
     /**
      * @param {Object} options
